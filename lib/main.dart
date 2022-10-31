@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'login_view.dart';
 
 void main() {
   runApp(const PentellioApp());
@@ -9,8 +10,11 @@ class PentellioApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Text('Hello Pentellio!'),
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const LoginView(),
     );
   }
 }
