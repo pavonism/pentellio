@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pentellio/chat_view.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({
@@ -85,6 +86,13 @@ class PentellioLogin extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
+  void register() {}
+
+  void login(BuildContext context) {
+    Navigator.of(context)
+        .pushReplacement(MaterialPageRoute(builder: (context) => ChatView()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
@@ -106,11 +114,11 @@ class PentellioLogin extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton(
-                  onPressed: () => {},
+                  onPressed: register,
                   child: const Text('Sign up'),
                 ),
                 TextButton(
-                  onPressed: () => {},
+                  onPressed: () => login(context),
                   child: const Text('Sign in'),
                 ),
               ],
