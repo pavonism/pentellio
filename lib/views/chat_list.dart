@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
+import 'package:pentellio/views/chat.dart';
+import 'package:pentellio/widgets/rounded_rect.dart';
 
-class ChatView extends StatelessWidget {
-  ChatView({super.key});
+class ChatListView extends StatelessWidget {
+  ChatListView({super.key});
 
   final List<String> chats = ['Placeholder', 'Placeholder', 'Placeholder'];
 
@@ -39,7 +40,7 @@ class ChatView extends StatelessWidget {
                       ),
                     ),
                     const Expanded(
-                      child: Center(child: Text('Placeholder')),
+                      child: ChatView(),
                     )
                   ],
                 );
@@ -54,9 +55,15 @@ class ChatTile extends StatelessWidget {
 
   final String chat;
 
+  void goToChat(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: ((context) => const ChatView())));
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      onTap: () => goToChat(context),
       child: ConstrainedBox(
         constraints: BoxConstraints.tight(const Size(double.infinity, 70)),
         child: Container(
@@ -69,16 +76,7 @@ class ChatTile extends StatelessWidget {
             padding:
                 const EdgeInsets.only(left: 5, bottom: 10, right: 5, top: 10),
             child: Row(children: [
-              Container(
-                decoration: BoxDecoration(
-                    color:
-                        Color((math.Random().nextDouble() * 0xFFFFFF).toInt())
-                            .withOpacity(1.0),
-                    border: Border.all(color: Colors.black, width: 1),
-                    borderRadius: const BorderRadius.all(Radius.circular(20))),
-                width: 50,
-                height: 50,
-              ),
+              const RoundedRect(50),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 10, right: 10),
@@ -90,6 +88,7 @@ class ChatTile extends StatelessWidget {
                         child: Text(
                           'Placeholder',
                           textAlign: TextAlign.left,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       SizedBox(

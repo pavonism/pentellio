@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pentellio/chat_view.dart';
+import 'package:pentellio/views/chat_list.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({
@@ -89,8 +89,8 @@ class PentellioLogin extends StatelessWidget {
   void register() {}
 
   void login(BuildContext context) {
-    Navigator.of(context)
-        .pushReplacement(MaterialPageRoute(builder: (context) => ChatView()));
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => ChatListView()));
   }
 
   @override
