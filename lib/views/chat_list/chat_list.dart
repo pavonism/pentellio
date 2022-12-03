@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pentellio/views/chat.dart';
+import 'package:pentellio/views/chat/chat.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
 
 class ChatListView extends StatelessWidget {
@@ -39,7 +39,7 @@ class ChatListView extends StatelessWidget {
                         })),
                       ),
                     ),
-                    const Expanded(
+                    Expanded(
                       child: ChatView(),
                     )
                   ],
@@ -57,7 +57,7 @@ class ChatTile extends StatelessWidget {
 
   void goToChat(BuildContext context) {
     Navigator.of(context)
-        .push(MaterialPageRoute(builder: ((context) => const ChatView())));
+        .push(MaterialPageRoute(builder: ((context) => ChatView())));
   }
 
   @override

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'views/login.dart';
+import 'views/login/login_screen.dart';
 
 void main() {
   runApp(const PentellioApp());
