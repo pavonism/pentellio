@@ -27,6 +27,7 @@ class _ChatViewState extends State<ChatView> {
     return GestureDetector(
       onTap: () => messageFocusNode.requestFocus(),
       child: Material(
+        color: Color(0xFF191C1F),
         child: Column(
           children: [
             ConstrainedBox(
@@ -34,7 +35,10 @@ class _ChatViewState extends State<ChatView> {
                   maxHeight: 50,
                 ),
                 child: Container(
-                  color: Colors.grey,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).backgroundColor,
+                    border: Border.all(width: 0.05),
+                  ),
                   padding: EdgeInsets.all(4.0),
                   child: Row(
                     children: [
@@ -88,7 +92,7 @@ class _ChatViewState extends State<ChatView> {
               ),
             ),
             Container(
-              color: Colors.lightBlueAccent,
+              color: Theme.of(context).backgroundColor,
               child: TextFormField(
                 autofocus: true,
                 textInputAction: TextInputAction.none,
@@ -129,29 +133,37 @@ class MessageTile extends StatelessWidget {
       Flexible(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: width),
-          child: Container(
-            decoration: BoxDecoration(
-                color: Colors.lightBlue,
-                border: Border.all(color: Colors.black, width: 1),
-                borderRadius: !sender
-                    ? BorderRadius.only(
-                        bottomRight: radius, topLeft: radius, topRight: radius)
-                    : BorderRadius.only(
-                        bottomLeft: radius, topLeft: radius, topRight: radius)),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment:
-                    !sender ? CrossAxisAlignment.start : CrossAxisAlignment.end,
-                children: [
-                  if (!sender)
-                    const Text(
-                      'Placeholder',
-                      textAlign: TextAlign.right,
-                    ),
-                  Text(message ??
-                      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-                ],
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                  color: Theme.of(context).backgroundColor,
+                  border: Border.all(color: Colors.black, width: 1),
+                  borderRadius: !sender
+                      ? BorderRadius.only(
+                          bottomRight: radius,
+                          topLeft: radius,
+                          topRight: radius)
+                      : BorderRadius.only(
+                          bottomLeft: radius,
+                          topLeft: radius,
+                          topRight: radius)),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: !sender
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.end,
+                  children: [
+                    if (!sender)
+                      const Text(
+                        'Placeholder',
+                        textAlign: TextAlign.right,
+                      ),
+                    Text(message ??
+                        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+                  ],
+                ),
               ),
             ),
           ),

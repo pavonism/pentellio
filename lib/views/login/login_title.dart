@@ -13,8 +13,10 @@ class PentellioTitle extends StatelessWidget {
         child: Text(
           twoLines ? 'Welcome to \n Pentellio!' : 'Welcome to Pentellio!',
           maxLines: 2,
-          style:
-              const TextStyle(fontSize: 100, fontFamily: 'FugglesPro-Regular'),
+          style: TextStyle(
+              fontSize: 100,
+              fontFamily: 'FugglesPro-Regular',
+              color: Theme.of(context).primaryColor),
           textAlign: TextAlign.center,
         ),
       ),

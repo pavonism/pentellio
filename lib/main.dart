@@ -61,7 +61,12 @@ class PentellioApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.grey,
+        primaryColor: Colors.white,
+        backgroundColor: const Color(0xFF282E33),
+        scaffoldBackgroundColor: const Color(0xFF282E33),
+        primaryTextTheme: Typography(platform: TargetPlatform.iOS).white,
+        textTheme: Typography(platform: TargetPlatform.iOS).white,
       ),
       home: Provider(
         create: (_) {

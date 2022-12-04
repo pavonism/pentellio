@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/auth_cubit.dart';
 
-import '../../services/auth_service.dart';
-
 class PentellioRegister extends StatefulWidget {
   const PentellioRegister({super.key});
 
