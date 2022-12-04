@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "637778517126",
+    "project_id": "pentellio",
+    "storage_bucket": "pentellio.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:637778517126:android:9b0e476d02d30915530507",
+        "android_client_info": {
+          "package_name": "com.example.pentellio"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "637778517126-ob5bo9585s4ktjkfsbaji57ugq8qg7t6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcY841Mwj7IxA-JXjmzrRzx6GJqzrlaeY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "637778517126-ob5bo9585s4ktjkfsbaji57ugq8qg7t6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

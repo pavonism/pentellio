@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:pentellio/cubits/auth_cubit.dart';
 import 'package:pentellio/views/chat/chat.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
 
 class ChatListView extends StatelessWidget {
-  ChatListView({super.key});
+  ChatListView({super.key, required this.state});
 
+  final SignedInState state;
   final List<String> chats = ['Placeholder', 'Placeholder', 'Placeholder'];
 
   @override

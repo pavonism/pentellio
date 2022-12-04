@@ -25,15 +25,15 @@ class LoginLandscape extends StatelessWidget {
               ),
               SizedBox(
                 width: constraints.maxWidth / 2,
-                child: const Center(
+                child: Center(
                   child: FittedBox(child: PentellioLogin()),
                 ),
               )
             ])
           : Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: const [
-                Expanded(child: Center(child: PentellioTitle())),
+              children: [
+                const Expanded(child: Center(child: PentellioTitle())),
                 Expanded(
                   child: Center(child: PentellioLogin()),
                 )

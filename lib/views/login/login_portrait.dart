@@ -22,7 +22,7 @@ class LoginPortrait extends StatelessWidget {
                   ),
                   SizedBox(
                     height: constraints.maxHeight / 2,
-                    child: const Center(
+                    child: Center(
                       child: FittedBox(
                         child: PentellioLogin(),
                       ),
@@ -30,8 +30,8 @@ class LoginPortrait extends StatelessWidget {
                   ),
                 ],
               )
-            : Column(children: const [
-                Expanded(child: PentellioTitle()),
+            : Column(children: [
+                const Expanded(child: PentellioTitle()),
                 Expanded(
                   child: Center(
                     child: PentellioLogin(),
