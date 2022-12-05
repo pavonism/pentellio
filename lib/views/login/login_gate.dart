@@ -17,9 +17,7 @@ class LoginGate extends StatelessWidget {
         );
       }
       if (state is SignedOutState) {
-        return LoginView(
-          state: state,
-        );
+        return const LoginView();
       }
       if (state is SigningInState) {
         return const Center(child: CircularProgressIndicator());

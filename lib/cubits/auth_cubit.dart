@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../services/auth_service.dart';
@@ -7,10 +9,14 @@ class AuthCubit extends Cubit<AuthState> {
       : super(
           authService.isSignedIn
               ? SignedInState(email: authService.userEmail)
-              : SignedOutState(),
+              : NeedsSigningInState(),
         );
 
   final AuthService authService;
+
+  void startLoggingIn() {
+    if (state is NeedsSigningInState) emit(SignedOutState());
+  }
 
   void startRegister() {
     emit(RegisterState());
@@ -21,34 +27,31 @@ class AuthCubit extends Cubit<AuthState> {
     required String password,
   }) async {
     emit(SigningInState());
+    final registerState = RegisterState(email: email, password: password);
 
     try {
       final result = await authService.register(email, password);
 
-      if (result == SignUpResult.success)
-        emit(SignedOutState());
-      else
-        emit(RegisterState());
-      // switch (result) {
-      //   case SignInResult.success:
-      //     emit(SignedInState(email: email));
-      //     break;
-      //   case SignInResult.invalidEmail:
-      //     emit(SignedOutState(error: 'Invalid email'));
-      //     break;
-      //   case SignInResult.userDisabled:
-      //     emit(SignedOutState(error: 'User has been banned'));
-      //     break;
-      //   case SignInResult.userNotFound:
-      //     emit(SignedOutState(error: 'User was not found'));
-      //     break;
-      //   case SignInResult.emailAlreadyInUse:
-      //     emit(SignedOutState(error: 'Email is already in used'));
-      //     break;
-      //   case SignInResult.wrongPassword:
-      //     emit(SignedOutState(error: "Email and password don't match"));
-      //     break;
-      // }
+      switch (result) {
+        case SignUpResult.success:
+          emit(SignedInState(email: email));
+          break;
+        case SignUpResult.invalidEmail:
+          emit(registerState..error = 'Invalid email');
+          break;
+        case SignUpResult.emailAlreadyInUse:
+          emit(registerState
+            ..error = 'Email is already in used \n Try with another one');
+          break;
+        case SignUpResult.operationNotAllowed:
+          emit(registerState..error = 'Operation is not allowed');
+          break;
+        case SignUpResult.weakPassword:
+          emit(registerState
+            ..error =
+                'Chosen password is too weak. \n Password must contain at least 6 characters');
+          break;
+      }
     } catch (e) {}
   }
 
@@ -59,25 +62,30 @@ class AuthCubit extends Cubit<AuthState> {
     emit(SigningInState());
     try {
       final result = await authService.signInWithEmail(email, password);
+      final signedInState = SignedInState(email: email);
+      final signedOutState = SignedOutState(email: email, password: password);
 
       switch (result) {
         case SignInResult.success:
-          emit(SignedInState(email: email));
+          emit(signedInState);
           break;
         case SignInResult.invalidEmail:
-          emit(SignedOutState(error: 'Invalid email'));
+          emit(signedOutState..error = 'Invalid email');
           break;
         case SignInResult.userDisabled:
-          emit(SignedOutState(error: 'User has been banned'));
+          emit(signedOutState..error = 'User has been banned');
           break;
         case SignInResult.userNotFound:
-          emit(SignedOutState(error: 'User was not found'));
+          emit(signedOutState
+            ..error = 'User was not found. \nPlease, check your credentials');
           break;
         case SignInResult.emailAlreadyInUse:
-          emit(SignedOutState(error: 'Email is already in used'));
+          emit(signedOutState..error = 'Email is already in used');
           break;
         case SignInResult.wrongPassword:
-          emit(SignedOutState(error: "Email and password don't match"));
+          emit(signedOutState
+            ..error =
+                "Email and password don't match. \nPlease, check your credentials");
           break;
       }
     } catch (e) {
@@ -94,6 +102,8 @@ class AuthCubit extends Cubit<AuthState> {
 
 abstract class AuthState {}
 
+class NeedsSigningInState extends SignedOutState {}
+
 class SignedInState extends AuthState {
   SignedInState({required this.email});
 
@@ -101,11 +111,16 @@ class SignedInState extends AuthState {
 }
 
 class SignedOutState extends AuthState {
-  SignedOutState({this.error});
+  SignedOutState({this.email = "", this.password = "", this.error});
 
-  final String? error;
+  String? error;
+  final String email;
+  final String password;
 }
 
 class SigningInState extends AuthState {}
 
-class RegisterState extends SignedOutState {}
+class RegisterState extends SignedOutState {
+  RegisterState({email = "", password = "", error})
+      : super(email: email, password: password, error: error);
+}

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/auth_cubit.dart';
+import 'package:pentellio/providers/logging_controlers_provider.dart';
 import 'package:pentellio/views/login/register.dart';
+import 'package:pentellio/widgets/themed_button.dart';
+import 'package:pentellio/widgets/themed_form_field.dart';
 
 class PentellioLogin extends StatelessWidget {
   const PentellioLogin({
@@ -18,67 +21,105 @@ class PentellioLogin extends StatelessWidget {
         child: BlocBuilder<AuthCubit, AuthState>(builder: (context, state) {
           if (state is RegisterState) return const PentellioRegister();
 
-          return PentellioLoginInputs();
+          return const PentellioLoginInputs();
         }),
       ),
     );
   }
 }
 
-class PentellioLoginInputs extends StatelessWidget {
-  PentellioLoginInputs({
+class PentellioLoginInputs extends StatefulWidget {
+  const PentellioLoginInputs({
     Key? key,
   }) : super(key: key);
 
-  final email = TextEditingController();
-  final password = TextEditingController();
+  @override
+  State<PentellioLoginInputs> createState() => _PentellioLoginInputsState();
+}
+
+class _PentellioLoginInputsState extends State<PentellioLoginInputs> {
+  final _formKey = GlobalKey<FormState>();
+  final RegExp emailRegExp =
+      RegExp("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+\$)");
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        TextField(
-          controller: email,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            labelText: 'Login:',
+    var state = context.read<AuthCubit>().state;
+    var email = context.read<LoggingControlersProvider>().email;
+    var password = context.read<LoggingControlersProvider>().password;
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ThemedFormField(
+            controller: email,
+            labelText: 'Email',
+            validator: (text) {
+              if (text == null || text.isEmpty) {
+                return "Please, enter your email";
+              }
+
+              if (!emailRegExp.hasMatch(text)) return "Invalid email";
+              return null;
+            },
           ),
-        ),
-        const SizedBox(
-          height: 16,
-        ),
-        TextField(
-          controller: password,
-          obscureText: true,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            labelText: 'Password:',
+          const SizedBox(
+            height: 20,
           ),
-        ),
-        const SizedBox(
-          height: 16,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            TextButton(
-              onPressed: () {
-                context.read<AuthCubit>().startRegister();
-              },
-              child: const Text('Sign up'),
+          ThemedFormField(
+            controller: password,
+            obscureText: true,
+            labelText: 'Password',
+            validator: (text) {
+              if (text == null || text.isEmpty) {
+                return "Please, enter your password";
+              }
+
+              return null;
+            },
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextButton(
+                onPressed: () {
+                  context.read<AuthCubit>().startRegister();
+                },
+                child: const Text('Sign up'),
+              ),
+              ThemedButton(
+                height: 32,
+                width: 128,
+                onPressed: () {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    context
+                        .read<AuthCubit>()
+                        .signIn(email: email.text, password: password.text);
+                  }
+                },
+                child: const Text('Sign in'),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          if (state is SignedOutState && state.error != null)
+            Text(
+              "${state.error!}!",
+              style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(context).errorColor,
+                  fontFamily: "Arial"),
             ),
-            TextButton(
-              onPressed: () {
-                context
-                    .read<AuthCubit>()
-                    .signIn(email: email.text, password: password.text);
-              },
-              child: const Text('Sign in'),
-            ),
-          ],
-        )
-      ],
+        ],
+      ),
     );
   }
 }

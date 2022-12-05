@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:pentellio/views/login/login_inputs.dart';
 import 'package:pentellio/views/login/login_title.dart';
 
 class LoginPortrait extends StatelessWidget {
   const LoginPortrait({
     Key? key,
+    this.child,
   }) : super(key: key);
+
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,7 @@ class LoginPortrait extends StatelessWidget {
                     height: constraints.maxHeight / 2,
                     child: Center(
                       child: FittedBox(
-                        child: PentellioLogin(),
+                        child: child,
                       ),
                     ),
                   ),
@@ -34,7 +36,7 @@ class LoginPortrait extends StatelessWidget {
                 const Expanded(child: PentellioTitle()),
                 Expanded(
                   child: Center(
-                    child: PentellioLogin(),
+                    child: child,
                   ),
                 ),
               ]);

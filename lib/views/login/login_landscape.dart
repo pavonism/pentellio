@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
-import 'login_inputs.dart';
 import 'login_title.dart';
 
 class LoginLandscape extends StatelessWidget {
   const LoginLandscape({
     Key? key,
+    this.child,
   }) : super(key: key);
+
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,7 @@ class LoginLandscape extends StatelessWidget {
               SizedBox(
                 width: constraints.maxWidth / 2,
                 child: Center(
-                  child: FittedBox(child: PentellioLogin()),
+                  child: FittedBox(child: child),
                 ),
               )
             ])
@@ -35,7 +37,7 @@ class LoginLandscape extends StatelessWidget {
               children: [
                 const Expanded(child: Center(child: PentellioTitle())),
                 Expanded(
-                  child: Center(child: PentellioLogin()),
+                  child: Center(child: child),
                 )
               ],
             );
