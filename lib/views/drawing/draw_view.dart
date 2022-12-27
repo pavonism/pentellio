@@ -7,7 +7,9 @@ class DrawView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PageNavigator(
-      child: Container(
+      duration: Duration(milliseconds: 200),
+      child: Material(
+        color: Colors.black,
         child: Text('drawView!'),
       ),
     );

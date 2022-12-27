@@ -33,6 +33,7 @@ class _ChatViewState extends State<ChatView> {
       backgroundColor: Color(0xFF191C1F),
       body: SafeArea(
         child: PageNavigator(
+          duration: Duration(milliseconds: 200),
           nextPage: DrawView(),
           child: Column(
             children: [

@@ -11,9 +11,8 @@ class ChatTile extends StatelessWidget {
   final String chat;
 
   void goToChat(BuildContext context) {
-    Navigator.of(context).push(
-      PentellioAnimations.SlidePageRouteBuilder(ChatView()),
-    );
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (builder) => ChatView()));
   }
 
   @override
