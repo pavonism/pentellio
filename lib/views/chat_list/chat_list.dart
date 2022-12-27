@@ -8,9 +8,7 @@ import '../../services/chat_service.dart';
 import 'chat_tile.dart';
 
 class ChatListPanel extends StatelessWidget {
-  ChatListPanel({super.key, required this.state});
-
-  final SignedInState state;
+  ChatListPanel({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -11,8 +11,22 @@ class ChatTile extends StatelessWidget {
   final String chat;
 
   void goToChat(BuildContext context) {
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (builder) => ChatView()));
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => ChatView(),
+        transitionDuration: Duration(milliseconds: 200),
+        reverseTransitionDuration: Duration.zero,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          var tween = Tween(begin: Offset.zero, end: Offset(1.0, 0.0));
+          var rightLeave =
+              animation.drive(Tween(begin: Offset(1.0, 0.0), end: Offset.zero));
+          return SlideTransition(
+            position: rightLeave,
+            child: child,
+          );
+        },
+      ),
+    );
   }
 
   @override

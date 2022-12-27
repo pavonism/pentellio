@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pentellio/views/chat_list/chat_list.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
 
@@ -33,6 +34,7 @@ class _ChatViewState extends State<ChatView> {
       backgroundColor: Color(0xFF191C1F),
       body: SafeArea(
         child: PageNavigator(
+          previousPage: ChatListPanel(),
           duration: Duration(milliseconds: 200),
           nextPage: DrawView(),
           child: Column(

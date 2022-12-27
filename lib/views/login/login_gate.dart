@@ -12,9 +12,7 @@ class LoginGate extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthCubit, AuthState>(builder: (context, state) {
       if (state is SignedInState) {
-        return ChatListPanel(
-          state: state,
-        );
+        return ChatListPanel();
       }
       if (state is SignedOutState) {
         return const LoginView();
