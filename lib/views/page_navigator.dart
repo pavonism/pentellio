@@ -32,14 +32,7 @@ class _PageNavigatorState extends State<PageNavigator>
   late final Animation<Offset> rightLeave =
       _controller.drive(Tween(begin: Offset.zero, end: Offset(1.0, 0.0)));
 
-  late Animation<Offset> leftEnter =
-      _controller.drive(Tween(begin: Offset(-1.0, 0.0), end: Offset.zero));
-
-  late Animation<Offset> rightEnter =
-      _controller.drive(Tween(begin: Offset(1.0, 0.0), end: Offset.zero));
-
-  late Animation<Offset> currentAnimation =
-      _controller.drive(Tween(begin: Offset.zero, end: Offset(1.0, 0.0)));
+  late Animation<Offset> currentAnimation = rightLeave;
 
   @override
   void dispose() {
