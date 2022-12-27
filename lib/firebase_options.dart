@@ -49,6 +49,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '637778517126',
     projectId: 'pentellio',
     authDomain: 'pentellio.firebaseapp.com',
+    databaseURL: 'https://pentellio-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'pentellio.appspot.com',
     measurementId: 'G-NVNNJMKP8X',
   );
@@ -58,6 +59,7 @@ class DefaultFirebaseOptions {
     appId: '1:637778517126:android:9b0e476d02d30915530507',
     messagingSenderId: '637778517126',
     projectId: 'pentellio',
+    databaseURL: 'https://pentellio-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'pentellio.appspot.com',
   );
 
@@ -66,9 +68,9 @@ class DefaultFirebaseOptions {
     appId: '1:637778517126:ios:b2323732813d7035530507',
     messagingSenderId: '637778517126',
     projectId: 'pentellio',
+    databaseURL: 'https://pentellio-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'pentellio.appspot.com',
-    iosClientId:
-        '637778517126-vv5s217n89j853cnl62aek7fk7t7ac4a.apps.googleusercontent.com',
+    iosClientId: '637778517126-vv5s217n89j853cnl62aek7fk7t7ac4a.apps.googleusercontent.com',
     iosBundleId: 'com.example.pentellio',
   );
 
@@ -77,9 +79,9 @@ class DefaultFirebaseOptions {
     appId: '1:637778517126:ios:b2323732813d7035530507',
     messagingSenderId: '637778517126',
     projectId: 'pentellio',
+    databaseURL: 'https://pentellio-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'pentellio.appspot.com',
-    iosClientId:
-        '637778517126-vv5s217n89j853cnl62aek7fk7t7ac4a.apps.googleusercontent.com',
+    iosClientId: '637778517126-vv5s217n89j853cnl62aek7fk7t7ac4a.apps.googleusercontent.com',
     iosBundleId: 'com.example.pentellio',
   );
 }

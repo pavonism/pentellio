@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "637778517126",
+    "firebase_url": "https://pentellio-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "pentellio",
     "storage_bucket": "pentellio.appspot.com"
   },
@@ -29,6 +30,13 @@
             {
               "client_id": "637778517126-ob5bo9585s4ktjkfsbaji57ugq8qg7t6.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "637778517126-vv5s217n89j853cnl62aek7fk7t7ac4a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.pentellio"
+              }
             }
           ]
         }

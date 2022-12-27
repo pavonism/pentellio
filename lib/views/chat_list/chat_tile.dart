@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pentellio/views/animations.dart';
 
 import '../../widgets/rounded_rect.dart';
 import '../chat/chat.dart';
@@ -10,8 +11,9 @@ class ChatTile extends StatelessWidget {
   final String chat;
 
   void goToChat(BuildContext context) {
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: ((context) => ChatView())));
+    Navigator.of(context).push(
+      PentellioAnimations.SlidePageRouteBuilder(ChatView()),
+    );
   }
 
   @override

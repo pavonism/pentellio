@@ -30,7 +30,7 @@ class AuthCubit extends Cubit<AuthState> {
     final registerState = RegisterState(email: email, password: password);
 
     try {
-      final result = await authService.register(email, password);
+      final result = await authService.signUp(email, password);
 
       switch (result) {
         case SignUpResult.success:

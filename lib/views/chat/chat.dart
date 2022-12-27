@@ -1,6 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pentellio/views/drawing/draw_view.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
+
+import '../animations.dart';
+import '../page_navigator.dart';
 
 class ChatView extends StatefulWidget {
   ChatView({super.key});
@@ -11,26 +16,27 @@ class ChatView extends StatefulWidget {
 
 class _ChatViewState extends State<ChatView> {
   List<String> messages = [];
-  final messageFocusNode = FocusNode();
   final messageController = TextEditingController();
 
-  void addMessage(String message) {
+  void addMessage() {
     setState(() {
-      messages.add(message);
+      messages.add(messageController.text);
     });
     messageController.clear();
-    messageFocusNode.requestFocus();
   }
+
+  late Offset horizontalDragStartPosition;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => messageFocusNode.requestFocus(),
-      child: Material(
-        color: Color(0xFF191C1F),
-        child: Column(
-          children: [
-            ConstrainedBox(
+    return Scaffold(
+      backgroundColor: Color(0xFF191C1F),
+      body: SafeArea(
+        child: PageNavigator(
+          nextPage: DrawView(),
+          child: Column(
+            children: [
+              ConstrainedBox(
                 constraints: const BoxConstraints(
                   maxHeight: 50,
                 ),
@@ -60,54 +66,73 @@ class _ChatViewState extends State<ChatView> {
                           ]),
                     ],
                   ),
-                )),
-            Expanded(
-              child: SelectionArea(
-                child: ScrollConfiguration(
-                  behavior:
-                      ScrollConfiguration.of(context).copyWith(dragDevices: {
-                    PointerDeviceKind.touch,
-                    PointerDeviceKind.mouse,
-                    PointerDeviceKind.trackpad,
-                    PointerDeviceKind.unknown
-                  }),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return ListView.builder(
-                        reverse: true,
-                        itemBuilder: (context, index) {
-                          return MessageTile(
-                              index % 3 == 0 || index < messages.length,
-                              constraints.maxWidth * 0.6 < 300
-                                  ? constraints.maxWidth
-                                  : 300 + constraints.maxWidth * 0.3,
-                              message: index < messages.length
-                                  ? messages[messages.length - index - 1]
-                                  : null);
-                        },
-                      );
-                    },
+                ),
+              ),
+              Expanded(
+                child: SelectionArea(
+                  child: ScrollConfiguration(
+                    behavior:
+                        ScrollConfiguration.of(context).copyWith(dragDevices: {
+                      PointerDeviceKind.touch,
+                      PointerDeviceKind.mouse,
+                      PointerDeviceKind.trackpad,
+                      PointerDeviceKind.unknown
+                    }),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return ListView.builder(
+                          reverse: true,
+                          itemBuilder: (context, index) {
+                            return MessageTile(
+                                index % 3 == 0 || index < messages.length,
+                                constraints.maxWidth * 0.6 < 300
+                                    ? constraints.maxWidth
+                                    : 300 + constraints.maxWidth * 0.3,
+                                message: index < messages.length
+                                    ? messages[messages.length - index - 1]
+                                    : null);
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
-            ),
-            Container(
-              color: Theme.of(context).backgroundColor,
-              child: TextFormField(
-                autofocus: true,
-                textInputAction: TextInputAction.none,
-                controller: messageController,
-                focusNode: messageFocusNode,
-                onFieldSubmitted: addMessage,
-                maxLines: null,
-                keyboardType: TextInputType.multiline,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(borderSide: BorderSide(width: 0)),
-                  hintText: 'Write a message...',
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                child: Row(
+                  children: [
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: TextFormField(
+                        textInputAction: TextInputAction.none,
+                        controller: messageController,
+                        maxLines: null,
+                        keyboardType: TextInputType.multiline,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Write a message...',
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 50,
+                      child: IconButton(
+                        onPressed: () {
+                          addMessage();
+                        },
+                        splashRadius: 25,
+                        color: Colors.white,
+                        icon: const Icon(
+                          Icons.send,
+                        ),
+                      ),
+                    )
+                  ],
                 ),
               ),
-            )
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -134,7 +159,7 @@ class MessageTile extends StatelessWidget {
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: width),
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Container(
               decoration: BoxDecoration(
                   color: Theme.of(context).backgroundColor,

@@ -28,7 +28,7 @@ class AuthService {
       _firebaseAuth.userChanges().map((user) => user != null);
   String get userEmail => _firebaseAuth.currentUser!.email!;
 
-  Future<SignUpResult> register(
+  Future<SignUpResult> signUp(
     String email,
     String password,
   ) async {
@@ -38,16 +38,17 @@ class AuthService {
 
       return SignUpResult.success;
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'invalid-email') {
-        return SignUpResult.invalidEmail;
-      } else if (e.code == 'email-already-in-use') {
-        return SignUpResult.emailAlreadyInUse;
-      } else if (e.code == 'operation-not-allowed') {
-        return SignUpResult.operationNotAllowed;
-      } else if (e.code == 'weak-password') {
-        return SignUpResult.weakPassword;
-      } else {
-        rethrow;
+      switch (e.code) {
+        case 'invalid-email':
+          return SignUpResult.invalidEmail;
+        case 'email-already-in-use':
+          return SignUpResult.emailAlreadyInUse;
+        case 'operation-not-allowed':
+          return SignUpResult.operationNotAllowed;
+        case 'weak-password':
+          return SignUpResult.weakPassword;
+        default:
+          rethrow;
       }
     }
   }
@@ -68,21 +69,20 @@ class AuthService {
 
       return SignInResult.success;
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'invalid-email') {
-        return SignInResult.invalidEmail;
-      } else if (e.code == 'email-already-in-use') {
-        return SignInResult.emailAlreadyInUse;
-      } else if (e.code == 'user-disabled') {
-        return SignInResult.userDisabled;
-      } else if (e.code == 'user-not-found') {
-        return SignInResult.userNotFound;
-      } else if (e.code == 'wrong-password') {
-        return SignInResult.wrongPassword;
-      } else {
-        rethrow;
+      switch (e.code) {
+        case 'invalid-email':
+          return SignInResult.invalidEmail;
+        case 'email-already-in-use':
+          return SignInResult.emailAlreadyInUse;
+        case 'user-disabled':
+          return SignInResult.userDisabled;
+        case 'user-not-found':
+          return SignInResult.userNotFound;
+        case 'wrong-password':
+          return SignInResult.wrongPassword;
+        default:
+          rethrow;
       }
-    } catch (e) {
-      rethrow;
     }
   }
 

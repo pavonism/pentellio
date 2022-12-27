@@ -21,36 +21,37 @@ class _PentellioTitleState extends State<PentellioTitle> {
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: DefaultTextStyle(
-          maxLines: 2,
-          style: TextStyle(
-            fontSize: 100,
-            fontFamily: 'FugglesPro-Regular',
-            color: Theme.of(context).primaryColor,
-            fontFeatures: const [
-              FontFeature.randomize(),
-            ],
-          ),
-          child: context.read<AuthCubit>().state is NeedsSigningInState
-              ? AnimatedTextKit(
-                  onFinished: () => context.read<AuthCubit>().startLoggingIn(),
-                  isRepeatingAnimation: false,
-                  animatedTexts: [
-                    TyperAnimatedText(
-                      widget.twoLines
-                          ? 'Welcome to \n Pentellio!'
-                          : 'Welcome to Pentellio!',
-                      textAlign: TextAlign.center,
-                      speed: const Duration(milliseconds: 60),
-                    )
-                  ],
-                )
-              : Text(
+            maxLines: 2,
+            style: TextStyle(
+              fontSize: 100,
+              fontFamily: 'FugglesPro-Regular',
+              color: Theme.of(context).primaryColor,
+              fontFeatures: const [
+                FontFeature.randomize(),
+              ],
+            ),
+            child:
+                // context.read<AuthCubit>().state is NeedsSigningInState ?
+                AnimatedTextKit(
+              onFinished: () => context.read<AuthCubit>().startLoggingIn(),
+              isRepeatingAnimation: false,
+              animatedTexts: [
+                TyperAnimatedText(
                   widget.twoLines
                       ? 'Welcome to \n Pentellio!'
                       : 'Welcome to Pentellio!',
                   textAlign: TextAlign.center,
-                ),
-        ),
+                  speed: const Duration(milliseconds: 60),
+                )
+              ],
+            )
+            // : Text(
+            //     widget.twoLines
+            //         ? 'Welcome to \n Pentellio!'
+            //         : 'Welcome to Pentellio!',
+            //     textAlign: TextAlign.center,
+            //   ),
+            ),
       ),
     );
   }
