@@ -5,6 +5,7 @@ import 'package:pentellio/views/chat_list/chat_list.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
 
+import '../../services/chat_service.dart';
 import '../animations.dart';
 import '../page_navigator.dart';
 
@@ -18,7 +19,7 @@ class ChatView extends StatefulWidget {
 class _ChatViewState extends State<ChatView> {
   List<String> messages = [];
   final messageController = TextEditingController();
-
+  final chatService = ChatService();
   void addMessage() {
     setState(() {
       messages.add(messageController.text);
@@ -31,110 +32,116 @@ class _ChatViewState extends State<ChatView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF191C1F),
       body: SafeArea(
         child: PageNavigator(
           previousPage: ChatListPanel(),
           duration: Duration(milliseconds: 200),
           nextPage: DrawView(),
-          child: Column(
-            children: [
-              ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxHeight: 50,
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).backgroundColor,
-                    border: Border.all(width: 0.05),
+          child: Container(
+            color: Color(0xFF191C1F),
+            child: Column(
+              children: [
+                ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxHeight: 50,
                   ),
-                  padding: EdgeInsets.all(4.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).backgroundColor,
+                      border: Border.all(width: 0.05),
+                    ),
+                    padding: EdgeInsets.all(4.0),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          iconSize: 20,
+                          icon:
+                              const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 5),
+                          child: RoundedRect(40),
+                        ),
+                        Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text('Placeholder'),
+                              Text('Last seen...'),
+                            ]),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: SelectionArea(
+                    child: ScrollConfiguration(
+                      behavior: ScrollConfiguration.of(context)
+                          .copyWith(dragDevices: {
+                        PointerDeviceKind.touch,
+                        PointerDeviceKind.mouse,
+                        PointerDeviceKind.trackpad,
+                        PointerDeviceKind.unknown
+                      }),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return ListView.builder(
+                            reverse: true,
+                            itemBuilder: (context, index) {
+                              return MessageTile(
+                                  index % 3 == 0 || index < messages.length,
+                                  constraints.maxWidth * 0.6 < 300
+                                      ? constraints.maxWidth
+                                      : 300 + constraints.maxWidth * 0.3,
+                                  message: index < messages.length
+                                      ? messages[messages.length - index - 1]
+                                      : null);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   child: Row(
                     children: [
-                      IconButton(
-                        iconSize: 20,
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () => Navigator.of(context).pop(),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          textInputAction: TextInputAction.none,
+                          controller: messageController,
+                          maxLines: null,
+                          keyboardType: TextInputType.multiline,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'Write a message...',
+                          ),
+                        ),
                       ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 5),
-                        child: RoundedRect(40),
-                      ),
-                      Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text('Placeholder'),
-                            Text('Last seen...'),
-                          ]),
+                      SizedBox(
+                        width: 50,
+                        child: IconButton(
+                          onPressed: () {
+                            chatService.GetUserChats();
+                            // chatService.sendMessage(Message(
+                            //     content: messageController.text, sentBy: '0'));
+                            addMessage();
+                          },
+                          splashRadius: 25,
+                          color: Colors.white,
+                          icon: const Icon(
+                            Icons.send,
+                          ),
+                        ),
+                      )
                     ],
                   ),
                 ),
-              ),
-              Expanded(
-                child: SelectionArea(
-                  child: ScrollConfiguration(
-                    behavior:
-                        ScrollConfiguration.of(context).copyWith(dragDevices: {
-                      PointerDeviceKind.touch,
-                      PointerDeviceKind.mouse,
-                      PointerDeviceKind.trackpad,
-                      PointerDeviceKind.unknown
-                    }),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return ListView.builder(
-                          reverse: true,
-                          itemBuilder: (context, index) {
-                            return MessageTile(
-                                index % 3 == 0 || index < messages.length,
-                                constraints.maxWidth * 0.6 < 300
-                                    ? constraints.maxWidth
-                                    : 300 + constraints.maxWidth * 0.3,
-                                message: index < messages.length
-                                    ? messages[messages.length - index - 1]
-                                    : null);
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                child: Row(
-                  children: [
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: TextFormField(
-                        textInputAction: TextInputAction.none,
-                        controller: messageController,
-                        maxLines: null,
-                        keyboardType: TextInputType.multiline,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Write a message...',
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 50,
-                      child: IconButton(
-                        onPressed: () {
-                          addMessage();
-                        },
-                        splashRadius: 25,
-                        color: Colors.white,
-                        icon: const Icon(
-                          Icons.send,
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

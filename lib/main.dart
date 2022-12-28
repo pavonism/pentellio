@@ -79,15 +79,12 @@ class PentellioApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF282E33),
       ),
       home: Provider(
-        create: (_) => ChatService(),
-        child: Provider(
-          create: (_) {
-            return AuthService(firebaseAuth: FirebaseAuth.instance);
-          },
-          child: BlocProvider(
-            create: (context) => AuthCubit(authService: context.read()),
-            child: const LoginGate(),
-          ),
+        create: (_) {
+          return AuthService(firebaseAuth: FirebaseAuth.instance);
+        },
+        child: BlocProvider(
+          create: (context) => AuthCubit(authService: context.read()),
+          child: const LoginGate(),
         ),
       ),
     );

@@ -1,4 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+
+import 'package:pentellio/models/user.dart';
 
 enum SignInResult {
   invalidEmail,
@@ -17,11 +20,14 @@ enum SignUpResult {
   success,
 }
 
+class Chat {}
+
 class AuthService {
-  const AuthService({required FirebaseAuth firebaseAuth})
+  AuthService({required FirebaseAuth firebaseAuth})
       : _firebaseAuth = firebaseAuth;
 
   final FirebaseAuth _firebaseAuth;
+  final _usersRef = FirebaseDatabase.instance.ref('users');
 
   bool get isSignedIn => _firebaseAuth.currentUser != null;
   Stream<bool> get isSignedInStream =>
@@ -33,9 +39,11 @@ class AuthService {
     String password,
   ) async {
     try {
-      await _firebaseAuth.createUserWithEmailAndPassword(
+      var credential = await _firebaseAuth.createUserWithEmailAndPassword(
           email: email, password: password);
 
+      var newUserRef = _usersRef.child(credential.user!.uid);
+      newUserRef.set(PentellioUser(email: email).toJson());
       return SignUpResult.success;
     } on FirebaseAuthException catch (e) {
       switch (e.code) {

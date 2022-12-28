@@ -1,23 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class Message {
-  Message({
-    required this.content,
-    required this.timestamp,
-  });
+  Message({required this.content, required this.sentBy});
 
-  final String content;
-  final DateTime timestamp;
+  String content;
+  String sentBy;
 
-  static Message fromSnapshot(
-          QueryDocumentSnapshot<Map<String, dynamic>> snapshot) =>
-      Message(
-        content: snapshot.data()['content'],
-        timestamp: (snapshot.data()['timestamp'] as Timestamp).toDate(),
-      );
-
-  Map<String, dynamic> toMap() => {
+  Map<String, dynamic> toJson() => {
         'content': content,
-        'timestamp': Timestamp.fromDate(timestamp),
+        'sentBy': sentBy,
+        'sentTime': DateTime.now().toString()
       };
 }
