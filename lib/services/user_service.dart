@@ -69,8 +69,7 @@ class UserService {
     var chat = await stream.first;
 
     if (chat.snapshot.value != null) {
-      return Friend.fromJson(chat.snapshot.value as Map<String, dynamic>)
-          .chatId;
+      return Friend.fromJson(chat.snapshot.value as Map).chatId;
     }
 
     return null;

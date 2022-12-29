@@ -10,12 +10,16 @@ class PageNavigator extends StatefulWidget {
       required this.child,
       this.nextPage,
       required this.duration,
-      this.previousPage});
+      this.previousPage,
+      this.onPreviousPage,
+      this.onNextPage});
 
   final Widget child;
   final Widget? previousPage;
   final Widget? nextPage;
   final Duration duration;
+  final Function? onPreviousPage;
+  final Function? onNextPage;
 
   @override
   State<PageNavigator> createState() => _PageNavigatorState();
@@ -47,63 +51,59 @@ class _PageNavigatorState extends State<PageNavigator>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-        onHorizontalDragStart: (details) {
-          horizontalDragStartPosition = details.globalPosition;
-        },
-        onHorizontalDragUpdate: (details) {
-          var horizontalMove =
-              (horizontalDragStartPosition - details.globalPosition).dx;
+    return LayoutBuilder(builder: (context, constraints) {
+      return GestureDetector(
+          onHorizontalDragStart: (details) {
+            horizontalDragStartPosition = details.globalPosition;
+          },
+          onHorizontalDragUpdate: (details) {
+            var horizontalMove =
+                (horizontalDragStartPosition - details.globalPosition).dx;
 
-          setState(() {
-            currentAnimation = horizontalMove < 0 ? rightLeave : leftLeave;
-          });
-          _controller.value = horizontalMove.abs() / 200;
-          horizontalDragEndPosition = details.globalPosition;
-        },
-        onHorizontalDragEnd: (details) {
-          var horizontalMove =
-              (horizontalDragStartPosition - horizontalDragEndPosition).dx;
-
-          if (horizontalMove < -100) {
-            _controller.forward().whenComplete(() {
-              Navigator.of(context).pop();
-            });
-          } else if (widget.nextPage != null && horizontalMove > 100) {
-            _controller.forward().whenComplete(() {
-              Navigator.of(context)
-                  .push(
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation1, animation2) =>
-                          widget.nextPage!,
-                      transitionDuration: Duration.zero,
-                      reverseTransitionDuration: Duration.zero,
-                    ),
-                  )
-                  .whenComplete(() => setState(() => _controller.value = 0));
-            });
-          } else if (!_controller.isAnimating) {
             setState(() {
-              _controller.value = 0;
+              currentAnimation = horizontalMove < 0 ? rightLeave : leftLeave;
             });
-          }
-        },
-        // child: SlideTransition(position: currentAnimation, child: widget.child),
-        child: Stack(
-          children: [
-            if (widget.nextPage != null &&
-                currentAnimation == leftLeave &&
-                _controller.value != 0)
-              Positioned.fill(child: widget.nextPage!),
-            if (widget.previousPage != null &&
-                currentAnimation == rightLeave &&
-                _controller.value != 0)
-              Positioned.fill(child: widget.previousPage!),
-            Positioned.fill(
-              child: SlideTransition(
-                  position: currentAnimation, child: widget.child),
-            )
-          ],
-        ));
+            _controller.value = horizontalMove.abs() / constraints.maxWidth;
+            horizontalDragEndPosition = details.globalPosition;
+          },
+          onHorizontalDragEnd: (details) {
+            var horizontalMove =
+                (horizontalDragStartPosition - horizontalDragEndPosition).dx;
+
+            if (widget.onPreviousPage != null && horizontalMove < -100) {
+              _controller.forward().whenComplete(() {
+                widget.onPreviousPage!();
+              });
+            } else if (widget.nextPage != null && horizontalMove > 100) {
+              _controller.forward().whenComplete(() {
+                if (widget.onNextPage != null) {
+                  widget.onNextPage!();
+                }
+                _controller.value = 0;
+              });
+            } else if (!_controller.isAnimating) {
+              setState(() {
+                _controller.value = 0;
+              });
+            }
+          },
+          // child: SlideTransition(position: currentAnimation, child: widget.child),
+          child: Stack(
+            children: [
+              if (widget.nextPage != null &&
+                  currentAnimation == leftLeave &&
+                  _controller.value != 0)
+                Positioned.fill(child: widget.nextPage!),
+              if (widget.previousPage != null &&
+                  currentAnimation == rightLeave &&
+                  _controller.value != 0)
+                Positioned.fill(child: widget.previousPage!),
+              Positioned.fill(
+                child: SlideTransition(
+                    position: currentAnimation, child: widget.child),
+              )
+            ],
+          ));
+    });
   }
 }

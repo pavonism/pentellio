@@ -5,7 +5,7 @@ class Message {
   String content;
   String sentBy;
 
-  Map<String, dynamic> toJson() => {
+  Map toJson() => {
         'content': content,
         'sentBy': sentBy,
         'sentTime': DateTime.now().toString()

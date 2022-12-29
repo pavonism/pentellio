@@ -14,8 +14,7 @@ class RoundedRect extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-          color: Color((math.Random().nextDouble() * 0xFFFFFF).toInt())
-              .withOpacity(1.0),
+          color: Colors.blue.withOpacity(1.0),
           border: Border.all(color: borderColor ?? Colors.black, width: 1),
           borderRadius: BorderRadius.all(Radius.circular(size * 0.4))),
       width: size,

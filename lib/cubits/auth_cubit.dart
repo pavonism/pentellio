@@ -23,10 +23,10 @@ class AuthCubit extends Cubit<AuthState> {
     emit(RegisterState());
   }
 
-  Future<void> register({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> register(
+      {required String email,
+      required String password,
+      required String username}) async {
     emit(SigningInState());
     final registerState = RegisterState(email: email, password: password);
 
@@ -37,7 +37,8 @@ class AuthCubit extends Cubit<AuthState> {
         case SignUpResult.success:
           var userId = authService.GetCurrentUserId()!;
           emit(SignedInState(uid: userId));
-          userService.AddNewUser(PentellioUser(email: email, userId: userId));
+          userService.AddNewUser(
+              PentellioUser(email: email, userId: userId, username: username));
           break;
         case SignUpResult.invalidEmail:
           emit(registerState..error = 'Invalid email');

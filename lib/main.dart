@@ -77,7 +77,7 @@ class PentellioApp extends StatelessWidget {
             cardColor: const Color(0x003D444B),
             brightness: Brightness.dark),
         backgroundColor: const Color(0xFF282E33),
-        scaffoldBackgroundColor: const Color(0xFF282E33),
+        scaffoldBackgroundColor: const Color(0xFF191C1F),
       ),
       home: Provider(
         create: (_) {

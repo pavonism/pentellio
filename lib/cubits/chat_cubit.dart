@@ -1,41 +1,48 @@
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/models/message.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/services/chat_service.dart';
-import 'package:pentellio/services/user_service.dart';
 
 import '../models/chat.dart';
+import '../services/user_service.dart';
 
-class ChatState {
+class EmptyState {
   bool? isSearchingUsers;
 }
 
-class EmptyChatState extends ChatState {
-  EmptyChatState({required this.currentUser});
+class UserState extends EmptyState {
+  UserState({required this.currentUser});
   PentellioUser currentUser;
+}
+
+class ChatState extends UserState {
+  ChatState({required this.openedChat, required super.currentUser});
+  Chat openedChat;
 }
 
 class ChatOpenedState extends ChatState {
-  ChatOpenedState({required this.openedChat, required this.currentUser});
-  Chat openedChat;
-  PentellioUser currentUser;
+  ChatOpenedState({required super.openedChat, required super.currentUser});
 }
 
-class SearchingUsersState extends ChatState {
-  SearchingUsersState({required this.currentUser}) {
+class SearchingUsersState extends UserState {
+  SearchingUsersState({required super.currentUser}) {
     isSearchingUsers = true;
   }
-  PentellioUser currentUser;
 }
 
-class ChatCubit extends Cubit<ChatState> {
+class DrawingChatState extends ChatState {
+  DrawingChatState({required super.openedChat, required super.currentUser});
+}
+
+class ChatCubit extends Cubit<EmptyState> {
   ChatCubit(
       {required this.chatService,
       required this.userService,
       required String userId})
-      : super(ChatState()) {
+      : super(EmptyState()) {
     _AssignUser(userId);
   }
 
@@ -49,6 +56,8 @@ class ChatCubit extends Cubit<ChatState> {
   }
 
   void OpenChat(Chat chat) {
+    closeChat();
+
     openedChat = chat;
     chatService.GetChatUpdates(
       chat,
@@ -64,7 +73,8 @@ class ChatCubit extends Cubit<ChatState> {
 
   void _AssignUser(String userId) async {
     currentUser = await userService.GetUser(userId);
-    emit(EmptyChatState(currentUser: currentUser));
+    chatService.ListenChats(currentUser.friends);
+    emit(UserState(currentUser: currentUser));
   }
 
   List<Chat> GetAllChats() {
@@ -80,7 +90,7 @@ class ChatCubit extends Cubit<ChatState> {
     var chatId = await userService.GetChatId(currentUser.userId, user.userId);
 
     if (chatId == null) {
-      chatId = await chatService.CreateNewChat(currentUser.userId, user.userId);
+      chatId = await chatService.CreateNewChat(currentUser, user);
       userService.AttachChatToUsers(currentUser.userId, user.userId, chatId);
     }
 
@@ -104,9 +114,22 @@ class ChatCubit extends Cubit<ChatState> {
     }
   }
 
-  closeChat() {
-    openedChat = null;
-    chatService.CloseChatUpdates();
-    emit(EmptyChatState(currentUser: currentUser));
+  void closeChat() {
+    if (openedChat != null) {
+      openedChat!.messages = [];
+      chatService.CloseChatUpdates();
+      openedChat = null;
+    }
+    emit(UserState(currentUser: currentUser));
+  }
+
+  void openDrawStream() {
+    if (openedChat != null) {
+      emit(DrawingChatState(openedChat: openedChat!, currentUser: currentUser));
+    }
+  }
+
+  void closeDrawStream() {
+    emit(ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
   }
 }

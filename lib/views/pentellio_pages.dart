@@ -6,10 +6,12 @@ import 'package:pentellio/models/chat.dart';
 import 'package:pentellio/services/chat_service.dart';
 import 'package:pentellio/services/user_service.dart';
 import 'package:pentellio/views/chat/chat.dart';
+import 'package:pentellio/views/drawing/draw_view.dart';
 import 'package:provider/provider.dart';
 
 import 'chat_list/chat_list.dart';
 import 'chat_list/users_panel.dart';
+import 'loading_screen.dart';
 
 class PentellionPages extends StatelessWidget {
   PentellionPages({super.key, required this.signedInState});
@@ -48,23 +50,27 @@ class PentellioPagesPortrait extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ChatCubit, ChatState>(
+    return BlocBuilder<ChatCubit, EmptyState>(
       builder: (context, state) {
-        if (state is EmptyChatState) {
-          return ChatPanelPortrait(
+        if (state is DrawingChatState) {
+          return DrawView(
             user: state.currentUser,
+            chat: state.openedChat,
           );
-        }
-        if (state is ChatOpenedState) {
+        } else if (state is ChatOpenedState) {
           return ChatView(
             chat: state.openedChat,
             user: state.currentUser,
           );
         } else if (state is SearchingUsersState) {
           return const UserListPanel();
+        } else if (state is UserState) {
+          return ChatPanelPortrait(
+            user: state.currentUser,
+          );
         }
 
-        return const CircularProgressIndicator();
+        return const LoadingScreen();
       },
     );
   }
@@ -85,27 +91,32 @@ class PentellioPagesLandscape extends StatelessWidget {
           height: double.infinity,
           child: Container(
             decoration: BoxDecoration(border: Border.all(color: Colors.black)),
-            child: BlocBuilder<ChatCubit, ChatState>(
+            child: BlocBuilder<ChatCubit, EmptyState>(
               builder: (context, state) {
-                if (state.isSearchingUsers ?? false) {
-                  return UserListPanel();
-                } else if (state is EmptyChatState) {
-                  return ChatPanelPortrait(
+                if (state is DrawingChatState) {
+                  return DrawView(
                     user: state.currentUser,
+                    chat: state.openedChat,
                   );
                 } else if (state is ChatOpenedState) {
                   return ChatPanelPortrait(
                     user: state.currentUser,
                   );
+                } else if (state.isSearchingUsers ?? false) {
+                  return UserListPanel();
+                } else if (state is UserState) {
+                  return ChatPanelPortrait(
+                    user: state.currentUser,
+                  );
                 }
 
-                return CircularProgressIndicator();
+                return const LoadingScreen();
               },
             ),
           ),
         ),
         Expanded(
-          child: BlocBuilder<ChatCubit, ChatState>(
+          child: BlocBuilder<ChatCubit, EmptyState>(
             builder: (context, state) {
               if (state is ChatOpenedState) {
                 return ChatView(

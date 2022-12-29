@@ -1,9 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pentellio/cubits/auth_cubit.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
-import 'package:pentellio/models/message.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/views/chat_list/chat_list.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
@@ -26,22 +24,31 @@ class _ChatViewState extends State<ChatView> {
   final messageController = TextEditingController();
 
   void sendMessage(BuildContext context) {
-    setState(() {
-      context.read<ChatCubit>().SendMessage(messageController.text);
-      messageController.clear();
-    });
+    context.read<ChatCubit>().SendMessage(messageController.text);
+    messageController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
+    var title = widget.chat.userIdToUsername.length == 1
+        ? widget.user.username
+        : widget.chat.userIdToUsername.entries
+            .firstWhere((element) => element.key != widget.user.userId)
+            .value;
+
     return Scaffold(
       body: SafeArea(
         child: PageNavigator(
+          onPreviousPage: () => context.read<ChatCubit>().closeChat(),
           previousPage: ChatPanelPortrait(
             user: widget.user,
           ),
           duration: Duration(milliseconds: 200),
-          nextPage: DrawView(),
+          nextPage: DrawView(
+            user: widget.user,
+            chat: widget.chat,
+          ),
+          onNextPage: context.read<ChatCubit>().openDrawStream,
           child: Container(
             color: Color(0xFF191C1F),
             child: Column(
@@ -72,9 +79,9 @@ class _ChatViewState extends State<ChatView> {
                         Column(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text('Placeholder'),
-                              Text('Last seen...'),
+                            children: [
+                              Text(title),
+                              const Text('Last seen...'),
                             ]),
                       ],
                     ),
@@ -98,16 +105,17 @@ class _ChatViewState extends State<ChatView> {
                             itemBuilder: (context, index) {
                               var currentUser =
                                   context.read<ChatCubit>().currentUser.userId;
-                              var msgIndx =
-                                  widget.chat.messages.length - index - 1;
+                              var msg = widget.chat.messages[
+                                  widget.chat.messages.length - index - 1];
                               return MessageTile(
-                                  widget.chat.messages[msgIndx].sentBy ==
-                                      currentUser,
+                                  msg.sentBy == currentUser
+                                      ? null
+                                      : widget
+                                          .chat.userIdToUsername[msg.sentBy],
                                   constraints.maxWidth * 0.6 < 300
                                       ? constraints.maxWidth
                                       : 300 + constraints.maxWidth * 0.3,
-                                  message:
-                                      widget.chat.messages[msgIndx].content);
+                                  message: msg.content);
                             },
                           );
                         },
@@ -160,9 +168,9 @@ class _ChatViewState extends State<ChatView> {
 class MessageTile extends StatelessWidget {
   MessageTile(this.sender, this.width, {super.key, required this.message});
 
-  final bool sender;
   final double width;
   String message;
+  String? sender;
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +190,7 @@ class MessageTile extends StatelessWidget {
               decoration: BoxDecoration(
                   color: Theme.of(context).backgroundColor,
                   border: Border.all(color: Colors.black, width: 1),
-                  borderRadius: !sender
+                  borderRadius: sender != null
                       ? BorderRadius.only(
                           bottomRight: radius,
                           topLeft: radius,
@@ -194,13 +202,13 @@ class MessageTile extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
-                  crossAxisAlignment: !sender
+                  crossAxisAlignment: sender != null
                       ? CrossAxisAlignment.start
                       : CrossAxisAlignment.end,
                   children: [
-                    if (!sender)
-                      const Text(
-                        'Placeholder',
+                    if (sender != null)
+                      Text(
+                        sender!,
                         textAlign: TextAlign.right,
                       ),
                     Text(message)
@@ -220,9 +228,10 @@ class MessageTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       child: Row(
           mainAxisAlignment:
-              sender ? MainAxisAlignment.end : MainAxisAlignment.start,
+              sender == null ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.end,
-          children: !sender ? singleMessage : singleMessage.reversed.toList()),
+          children:
+              sender != null ? singleMessage : singleMessage.reversed.toList()),
     );
   }
 }

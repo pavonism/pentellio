@@ -1,22 +1,40 @@
+import 'package:firebase_core/firebase_core.dart';
+
 import 'chat.dart';
 
 class PentellioUser {
-  PentellioUser({required this.email, required userId});
+  PentellioUser(
+      {this.email = '',
+      this.userId = '',
+      this.username = '',
+      this.friends = const []});
   late String email;
   late String userId;
-  List<Friend> friends = [];
+  String username;
+  List<Friend> friends;
 
-  Map<String, dynamic> toJson() => {
+  Map toJson() => {
         'email': email,
         'chats': Friend.listToJson(friends),
+        'username': username,
       };
 
-  PentellioUser.fromJson(Object json, {required this.userId}) {
-    var map = json as Map<String, dynamic>;
-    email = map['email'];
+  static PentellioUser fromJson(Object json, {required userId}) {
+    var map = json as Map;
+    var email = map['email'];
+    var username = '';
+    List<Friend> friends = [];
 
-    if (map.containsKey('friends'))
+    if (map.containsKey('friends')) {
       friends = Friend.listFromJson(map['friends']);
+    }
+
+    if (map.containsKey('username')) {
+      username = map['username'];
+    }
+
+    return PentellioUser(
+        email: email, userId: userId, friends: friends, username: username);
   }
 }
 
@@ -25,7 +43,7 @@ class Friend {
   String uId;
   String chatId;
 
-  static List<Friend> listFromJson(Map<String, dynamic> json) {
+  static List<Friend> listFromJson(Map json) {
     List<Friend> friends = [];
     json.forEach(
       (key, value) => friends.add(Friend(uId: key, chatId: value)),
@@ -33,15 +51,15 @@ class Friend {
     return friends;
   }
 
-  static Map<String, dynamic> listToJson(List<Friend> friends) {
+  static Map listToJson(List<Friend> friends) {
     return <String, dynamic>{for (var f in friends) f.uId: f.chatId};
   }
 
-  static Map<String, dynamic> toJson(Friend friend) {
+  static Map toJson(Friend friend) {
     return {friend.uId: friend.chatId};
   }
 
-  static Friend fromJson(Map<String, dynamic> json) {
+  static Friend fromJson(Map json) {
     return listFromJson(json).first;
   }
 }

@@ -30,8 +30,11 @@ class ChatService {
     });
   }
 
-  Future<String> CreateNewChat(String uid1, String uid2) async {
-    var newChat = Chat(userIds: [uid1, uid2], messages: []);
+  Future<String> CreateNewChat(PentellioUser user1, PentellioUser user2) async {
+    var newChat = Chat(userIdToUsername: {
+      user1.userId: user1.username,
+      user2.userId: user2.username
+    }, messages: []);
     var ref = _chats.push();
     ref.set(newChat.toJson());
     newChat.chatId = ref.key!;
@@ -41,12 +44,12 @@ class ChatService {
   Future<Chat> GetChat(String chatId) async {
     try {
       var snapshot = await _chats.child(chatId).get();
-      return Chat.fromJson(snapshot.value as Map<String, dynamic>);
+      return Chat.fromJson(snapshot.value as Map);
     } catch (e) {
       log(e.toString());
     }
 
-    return Chat(messages: [], userIds: []);
+    return Chat(messages: [], userIdToUsername: {});
   }
 
   void GetChatUpdates(Chat chat, Function(Message) onNewMessages) {
@@ -61,6 +64,19 @@ class ChatService {
           log(e.toString(), time: DateTime.now());
         }
       }
+    });
+  }
+
+  void ListenChats(List<Friend> friends) {
+    friends.forEach((element) {
+      _chats
+          .child(element.chatId)
+          .orderByChild('sentTime')
+          .limitToLast(100)
+          .onChildChanged
+          .listen((event) {
+        var test = event.snapshot.value;
+      });
     });
   }
 

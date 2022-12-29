@@ -14,10 +14,7 @@ import '../../services/chat_service.dart';
 import 'chat_tile.dart';
 
 class ChatPanelPortrait extends StatefulWidget {
-  ChatPanelPortrait({
-    Key? key,
-    required this.user
-  }) : super(key: key);
+  ChatPanelPortrait({Key? key, required this.user}) : super(key: key);
 
   PentellioUser user;
 
@@ -84,17 +81,16 @@ class _ChatPanelPortraitState extends State<ChatPanelPortrait> {
         ),
         body: Container(
             decoration: BoxDecoration(border: Border.all(color: Colors.black)),
-            child: ChatList(user: widget.user,)),
+            child: ChatList(
+              user: widget.user,
+            )),
       ),
     );
   }
 }
 
 class ChatList extends StatelessWidget {
-  ChatList({
-    Key? key,
-    required this.user
-  }) : super(key: key);
+  ChatList({Key? key, required this.user}) : super(key: key);
 
   PentellioUser user;
 
@@ -103,10 +99,12 @@ class ChatList extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () async {},
       child: ListView.builder(
-        itemCount: user.friends.length,
-        itemBuilder: ((context, index) {
-        return ChatTile(friend: user.friends[index],);
-      })),
+          itemCount: user.friends.length,
+          itemBuilder: ((context, index) {
+            return ChatTile(
+              friend: user.friends[index],
+            );
+          })),
     );
   }
 }

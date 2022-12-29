@@ -23,6 +23,7 @@ class _PentellioRegisterState extends State<PentellioRegister> {
     var state = context.read<AuthCubit>().state;
     var email = context.read<LoggingControlersProvider>().email;
     var password = context.read<LoggingControlersProvider>().password;
+    var nickname = context.read<LoggingControlersProvider>().nickname;
 
     return Form(
       key: _formKey,
@@ -30,6 +31,20 @@ class _PentellioRegisterState extends State<PentellioRegister> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          ThemedFormField(
+            controller: nickname,
+            labelText: "Username*",
+            validator: ((text) {
+              if (text == null || text.isEmpty) {
+                return 'Please enter your username.';
+              }
+
+              return null;
+            }),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
           ThemedFormField(
             controller: email,
             labelText: "Email*",
@@ -72,9 +87,10 @@ class _PentellioRegisterState extends State<PentellioRegister> {
                 width: 128,
                 onPressed: () {
                   if (_formKey.currentState?.validate() ?? false) {
-                    context
-                        .read<AuthCubit>()
-                        .register(email: email.text, password: password.text);
+                    context.read<AuthCubit>().register(
+                        email: email.text,
+                        password: password.text,
+                        username: nickname.text);
                   }
                 },
                 child: const Text('Sign up'),
