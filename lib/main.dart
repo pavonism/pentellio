@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/services/chat_service.dart';
+import 'package:pentellio/services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:pentellio/services/auth_service.dart';
 import 'package:pentellio/views/login/login_gate.dart';
@@ -82,9 +83,15 @@ class PentellioApp extends StatelessWidget {
         create: (_) {
           return AuthService(firebaseAuth: FirebaseAuth.instance);
         },
-        child: BlocProvider(
-          create: (context) => AuthCubit(authService: context.read()),
-          child: const LoginGate(),
+        child: Provider(
+          create: (_) {
+            return UserService();
+          },
+          child: BlocProvider(
+            create: (context) => AuthCubit(
+                authService: context.read(), userService: context.read()),
+            child: const LoginGate(),
+          ),
         ),
       ),
     );

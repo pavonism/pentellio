@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pentellio/cubits/chat_cubit.dart';
 import 'package:pentellio/models/chat.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/services/chat_service.dart';
@@ -10,13 +12,12 @@ class UserTile extends StatelessWidget {
   UserTile({super.key, required this.pentellioUser});
 
   PentellioUser pentellioUser;
-  ChatService _chatService = ChatService();
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        _chatService.OpenChat();
+        context.read<ChatCubit>().CreateAndOpenChat(pentellioUser);
       },
       child: ConstrainedBox(
         constraints: BoxConstraints.tight(const Size(double.infinity, 70)),

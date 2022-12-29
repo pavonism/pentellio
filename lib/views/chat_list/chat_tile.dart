@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pentellio/models/user.dart';
 
 import '../chat/chat.dart';
 
 class ChatTile extends StatelessWidget {
-  const ChatTile({super.key, this.chat = ''});
+  const ChatTile({super.key, required this.friend});
 
-  final String chat;
+  final Friend friend;
 
   void goToChat(BuildContext context) {
     Navigator.of(context).push(
       PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) => ChatView(),
+        pageBuilder: (context, animation1, animation2) => Text('test'),
         transitionDuration: Duration(milliseconds: 200),
         reverseTransitionDuration: Duration.zero,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -48,8 +49,7 @@ class ChatTile extends StatelessWidget {
                 child: CachedNetworkImage(
                   placeholder: (context, url) =>
                       const CircularProgressIndicator(),
-                  imageUrl:
-                      'https://picsum.photos/250?${DateTime.now().millisecondsSinceEpoch.toString()}',
+                  imageUrl: 'https://picsum.photos/250?',
                 ),
               ),
               Expanded(
@@ -58,13 +58,13 @@ class ChatTile extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Align(
+                      Align(
                         alignment: Alignment.topLeft,
                         child: Text(
-                          'Placeholder',
+                          friend.uId,
                           textAlign: TextAlign.left,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                         ),
                       ),
                       const SizedBox(

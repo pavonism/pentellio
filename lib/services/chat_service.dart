@@ -1,25 +1,27 @@
+import 'dart:async';
 import 'dart:developer';
-import 'dart:html';
 
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:pentellio/models/user.dart';
+import 'package:firebase_database/ui/utils/stream_subscriber_mixin.dart';
 
+import '../models/chat.dart';
 import '../models/message.dart';
-import 'chat_service.dart';
+import '../models/user.dart';
 
 class ChatService {
-  final _database = FirebaseDatabase.instance;
+  ChatService();
+  final _chats = FirebaseDatabase.instance.ref("chats");
+  StreamSubscription<DatabaseEvent>? subscription;
 
-  void sendMessage(Message msg) {
-    var ref = _database.ref("chats/0/messages");
+  void sendMessage(String chatId, Message msg) {
+    var ref = _chats.child("$chatId/messages");
     var newMessage = ref.push();
     newMessage.set(msg.toJson());
   }
 
   void GetUserChats() {
-    _database.ref("chats").onValue.listen((event) {
+    List<Chat> chats = [];
+    _chats.onValue.listen((event) {
       final _snapshot = event.snapshot;
       for (DataSnapshot snapshot in _snapshot.children) {
         String data = snapshot.value.toString();
@@ -28,30 +30,41 @@ class ChatService {
     });
   }
 
-  Future<List<PentellioUser>> SearchUsers(String text) async {
-    List<PentellioUser> users = [];
-    await _database
-        .ref("users")
-        .orderByChild('email')
-        .startAt(text)
-        .endAt(text + "\uf8ff")
-        .once()
-        .then((value) {
-      if (value.snapshot.value != null) {
-        var result = value.snapshot.value as Map;
-        log(result.toString());
-
-        result.forEach((key, value) {
-          var user = PentellioUser.fromJson(value);
-          users.add(user);
-        });
-      }
-    });
-
-    return users;
+  Future<String> CreateNewChat(String uid1, String uid2) async {
+    var newChat = Chat(userIds: [uid1, uid2], messages: []);
+    var ref = _chats.push();
+    ref.set(newChat.toJson());
+    newChat.chatId = ref.key!;
+    return ref.key!;
   }
 
-  void OpenChat() {
-    
+  Future<Chat> GetChat(String chatId) async {
+    try {
+      var snapshot = await _chats.child(chatId).get();
+      return Chat.fromJson(snapshot.value as Map<String, dynamic>);
+    } catch (e) {
+      log(e.toString());
+    }
+
+    return Chat(messages: [], userIds: []);
+  }
+
+  void GetChatUpdates(Chat chat, Function(Message) onNewMessages) {
+    var chatId = chat.chatId;
+    subscription =
+        _chats.child("$chatId/messages").onChildAdded.listen((event) {
+      if (event.snapshot.value != null) {
+        try {
+          var msgs = Message.fromJson(event.snapshot.value as Map);
+          onNewMessages(msgs);
+        } catch (e) {
+          log(e.toString(), time: DateTime.now());
+        }
+      }
+    });
+  }
+
+  void CloseChatUpdates() {
+    subscription?.cancel();
   }
 }

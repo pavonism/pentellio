@@ -1,40 +1,45 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pentellio/cubits/auth_cubit.dart';
+import 'package:pentellio/cubits/chat_cubit.dart';
+import 'package:pentellio/models/message.dart';
+import 'package:pentellio/models/user.dart';
 import 'package:pentellio/views/chat_list/chat_list.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
 
-import '../../services/chat_service.dart';
-import '../animations.dart';
 import '../page_navigator.dart';
+import 'package:pentellio/models/chat.dart';
 
 class ChatView extends StatefulWidget {
-  ChatView({super.key});
+  const ChatView({super.key, required this.chat, required this.user});
+
+  final PentellioUser user;
+  final Chat chat;
 
   @override
   State<ChatView> createState() => _ChatViewState();
 }
 
 class _ChatViewState extends State<ChatView> {
-  List<String> messages = [];
   final messageController = TextEditingController();
-  final chatService = ChatService();
-  void addMessage() {
-    setState(() {
-      messages.add(messageController.text);
-    });
-    messageController.clear();
-  }
 
-  late Offset horizontalDragStartPosition;
+  void sendMessage(BuildContext context) {
+    setState(() {
+      context.read<ChatCubit>().SendMessage(messageController.text);
+      messageController.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: PageNavigator(
-          previousPage: ChatListPanel(),
+          previousPage: ChatPanelPortrait(
+            user: widget.user,
+          ),
           duration: Duration(milliseconds: 200),
           nextPage: DrawView(),
           child: Container(
@@ -57,7 +62,8 @@ class _ChatViewState extends State<ChatView> {
                           iconSize: 20,
                           icon:
                               const Icon(Icons.arrow_back, color: Colors.white),
-                          onPressed: () => Navigator.of(context).pop(),
+                          onPressed: () =>
+                              context.read<ChatCubit>().closeChat(),
                         ),
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 5),
@@ -88,15 +94,20 @@ class _ChatViewState extends State<ChatView> {
                         builder: (context, constraints) {
                           return ListView.builder(
                             reverse: true,
+                            itemCount: widget.chat.messages.length,
                             itemBuilder: (context, index) {
+                              var currentUser =
+                                  context.read<ChatCubit>().currentUser.userId;
+                              var msgIndx =
+                                  widget.chat.messages.length - index - 1;
                               return MessageTile(
-                                  index % 3 == 0 || index < messages.length,
+                                  widget.chat.messages[msgIndx].sentBy ==
+                                      currentUser,
                                   constraints.maxWidth * 0.6 < 300
                                       ? constraints.maxWidth
                                       : 300 + constraints.maxWidth * 0.3,
-                                  message: index < messages.length
-                                      ? messages[messages.length - index - 1]
-                                      : null);
+                                  message:
+                                      widget.chat.messages[msgIndx].content);
                             },
                           );
                         },
@@ -125,10 +136,7 @@ class _ChatViewState extends State<ChatView> {
                         width: 50,
                         child: IconButton(
                           onPressed: () {
-                            chatService.GetUserChats();
-                            // chatService.sendMessage(Message(
-                            //     content: messageController.text, sentBy: '0'));
-                            addMessage();
+                            sendMessage(context);
                           },
                           splashRadius: 25,
                           color: Colors.white,
@@ -150,11 +158,11 @@ class _ChatViewState extends State<ChatView> {
 }
 
 class MessageTile extends StatelessWidget {
-  MessageTile(this.sender, this.width, {super.key, this.message});
+  MessageTile(this.sender, this.width, {super.key, required this.message});
 
   final bool sender;
   final double width;
-  String? message;
+  String message;
 
   @override
   Widget build(BuildContext context) {
@@ -195,8 +203,7 @@ class MessageTile extends StatelessWidget {
                         'Placeholder',
                         textAlign: TextAlign.right,
                       ),
-                    Text(message ??
-                        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+                    Text(message)
                   ],
                 ),
               ),

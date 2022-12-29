@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/views/chat_list/chat_list.dart';
 import 'package:pentellio/views/login/login_screen.dart';
+import 'package:pentellio/views/pentellio_pages.dart';
 
 import '../../cubits/auth_cubit.dart';
 
@@ -12,7 +13,9 @@ class LoginGate extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthCubit, AuthState>(builder: (context, state) {
       if (state is SignedInState) {
-        return ChatListPanel();
+        return PentellionPages(
+          signedInState: state,
+        );
       }
       if (state is SignedOutState) {
         return const LoginView();
@@ -21,7 +24,7 @@ class LoginGate extends StatelessWidget {
         return const Center(child: CircularProgressIndicator());
       }
 
-      return const SizedBox();
+      return LoginView();
     });
   }
 }

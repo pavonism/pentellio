@@ -9,7 +9,7 @@ class DrawView extends StatelessWidget {
   Widget build(BuildContext context) {
     return PageNavigator(
       duration: Duration(milliseconds: 200),
-      previousPage: ChatView(),
+      previousPage: Text('test'),
       child: SafeArea(
         child: Scaffold(
           backgroundColor: Color(0xFF191C1F),

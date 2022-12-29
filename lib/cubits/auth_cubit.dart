@@ -1,18 +1,19 @@
-import 'dart:math';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pentellio/models/user.dart';
+import 'package:pentellio/services/user_service.dart';
 
 import '../services/auth_service.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit({required this.authService})
+  AuthCubit({required this.authService, required this.userService})
       : super(
           authService.isSignedIn
-              ? SignedInState(email: authService.userEmail)
+              ? SignedInState(uid: authService.GetCurrentUserId()!)
               : NeedsSigningInState(),
         );
 
   final AuthService authService;
+  final UserService userService;
 
   void startLoggingIn() {
     if (state is NeedsSigningInState) emit(SignedOutState());
@@ -34,7 +35,9 @@ class AuthCubit extends Cubit<AuthState> {
 
       switch (result) {
         case SignUpResult.success:
-          emit(SignedInState(email: email));
+          var userId = authService.GetCurrentUserId()!;
+          emit(SignedInState(uid: userId));
+          userService.AddNewUser(PentellioUser(email: email, userId: userId));
           break;
         case SignUpResult.invalidEmail:
           emit(registerState..error = 'Invalid email');
@@ -62,12 +65,12 @@ class AuthCubit extends Cubit<AuthState> {
     emit(SigningInState());
     try {
       final result = await authService.signInWithEmail(email, password);
-      final signedInState = SignedInState(email: email);
       final signedOutState = SignedOutState(email: email, password: password);
 
       switch (result) {
         case SignInResult.success:
-          emit(signedInState);
+          var userId = authService.GetCurrentUserId()!;
+          emit(SignedInState(uid: userId));
           break;
         case SignInResult.invalidEmail:
           emit(signedOutState..error = 'Invalid email');
@@ -105,9 +108,9 @@ abstract class AuthState {}
 class NeedsSigningInState extends SignedOutState {}
 
 class SignedInState extends AuthState {
-  SignedInState({required this.email});
+  SignedInState({required this.uid});
 
-  final String email;
+  final String uid;
 }
 
 class SignedOutState extends AuthState {
