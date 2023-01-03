@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/utils/stream_subscriber_mixin.dart';
+import 'package:pentellio/models/sketch.dart';
 
 import '../models/chat.dart';
 import '../models/message.dart';
@@ -34,7 +35,7 @@ class ChatService {
     var newChat = Chat(userIdToUsername: {
       user1.userId: user1.username,
       user2.userId: user2.username
-    }, messages: []);
+    });
     var ref = _chats.push();
     ref.set(newChat.toJson());
     newChat.chatId = ref.key!;
@@ -82,5 +83,27 @@ class ChatService {
 
   void CloseChatUpdates() {
     subscription?.cancel();
+  }
+
+  void ListenSketches(Chat chat, Function(Sketch) onNewSketch) {
+    _chats.child(chat.chatId).child('sketches').onChildAdded.listen((event) {
+      if (event.snapshot.value != null) {
+        try {
+          var sketch = Sketch.fromJson(event.snapshot.value as Map);
+          onNewSketch(sketch);
+        } catch (e) {
+          log(e.toString(), time: DateTime.now());
+        }
+      }
+    });
+  }
+
+  void addSketch(Chat chat, Sketch sketch) async {
+    var newSketch = _chats.child("${chat.chatId}/sketches").push();
+    await newSketch.set(sketch.toJson());
+  }
+
+  void clearSketches(Chat chat) async {
+    await _chats.child("${chat.chatId}/sketches").remove();
   }
 }

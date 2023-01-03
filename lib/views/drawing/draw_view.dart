@@ -28,6 +28,39 @@ class _DrawViewState extends State<DrawView> {
     setState(() => pickerColor = color);
   }
 
+  Widget buildColorPickerDialog(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(50))),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      content: SingleChildScrollView(
+        child: SlidePicker(
+          pickerColor: currentColor,
+          onColorChanged: changeColor,
+          colorModel: ColorModel.rgb,
+          enableAlpha: false,
+          displayThumbColor: true,
+          showParams: true,
+          showIndicator: true,
+          indicatorBorderRadius:
+              const BorderRadius.vertical(top: Radius.circular(25)),
+        ),
+      ),
+      actions: <Widget>[
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ThemedButton(
+            child: const Text('Select'),
+            onPressed: () {
+              setState(() => currentColor = pickerColor);
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PageNavigator(
@@ -40,50 +73,37 @@ class _DrawViewState extends State<DrawView> {
       child: SafeArea(
         child: Scaffold(
           backgroundColor: Color(0xFF191C1F),
-          body: Sketcher(color: currentColor),
+          body: Sketcher(
+            color: currentColor,
+            chatCubit: context.read<ChatCubit>(),
+            sketches: widget.chat.sketches,
+          ),
           floatingActionButtonLocation: FloatingActionButtonLocation.miniEndTop,
-          floatingActionButton: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-              child: FloatingActionButton(
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: ((context) => AlertDialog(
-                            shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(50))),
-                            backgroundColor:
-                                Theme.of(context).scaffoldBackgroundColor,
-                            content: SingleChildScrollView(
-                              child: SlidePicker(
-                                pickerColor: currentColor,
-                                onColorChanged: changeColor,
-                                colorModel: ColorModel.rgb,
-                                enableAlpha: false,
-                                displayThumbColor: true,
-                                showParams: true,
-                                showIndicator: true,
-                                indicatorBorderRadius:
-                                    const BorderRadius.vertical(
-                                        top: Radius.circular(25)),
-                              ),
-                            ),
-                            actions: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ThemedButton(
-                                  child: const Text('Select'),
-                                  onPressed: () {
-                                    setState(() => currentColor = pickerColor);
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ),
-                            ],
-                          )));
-                },
-                child: Icon(Icons.color_lens),
-              )),
+          floatingActionButton:
+              Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+            Flexible(
+                child: FloatingActionButton(
+              mini: true,
+              onPressed: () {
+                context.read<ChatCubit>().clearSketches();
+              },
+              child: Icon(Icons.clear),
+            )),
+            SizedBox(
+              width: 16,
+            ),
+            Flexible(
+              child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      showDialog(
+                          context: context, builder: buildColorPickerDialog);
+                    },
+                    child: Icon(Icons.color_lens),
+                  )),
+            ),
+          ]),
         ),
       ),
     );

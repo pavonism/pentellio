@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/models/message.dart';
+import 'package:pentellio/models/sketch.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/services/chat_service.dart';
 
@@ -91,7 +92,8 @@ class ChatCubit extends Cubit<EmptyState> {
 
     if (chatId == null) {
       chatId = await chatService.CreateNewChat(currentUser, user);
-      userService.AttachChatToUsers(currentUser.userId, user.userId, chatId);
+      await userService.AttachChatToUsers(
+          currentUser.userId, user.userId, chatId);
     }
 
     var chat = await chatService.GetChat(chatId);
@@ -125,11 +127,26 @@ class ChatCubit extends Cubit<EmptyState> {
 
   void openDrawStream() {
     if (openedChat != null) {
+      chatService.ListenSketches(openedChat!, (sketch) {
+        openedChat!.sketches.add(sketch);
+        emit(DrawingChatState(
+            openedChat: openedChat!, currentUser: currentUser));
+      });
       emit(DrawingChatState(openedChat: openedChat!, currentUser: currentUser));
     }
   }
 
   void closeDrawStream() {
     emit(ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
+  }
+
+  void sendSketch(Sketch sketch) {
+    chatService.addSketch(openedChat!, sketch);
+  }
+
+  void clearSketches() {
+    chatService.clearSketches(openedChat!);
+    openedChat!.sketches = [];
+    emit(DrawingChatState(openedChat: openedChat!, currentUser: currentUser));
   }
 }

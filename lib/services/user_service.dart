@@ -20,13 +20,17 @@ class UserService {
   List<PentellioUser> _MapToUsers(DatabaseEvent event) {
     List<PentellioUser> users = [];
 
-    if (event.snapshot.value != null) {
-      var result = event.snapshot.value as Map;
-      result.forEach((key, value) {
-        log(key);
-        var user = PentellioUser.fromJson(value, userId: key);
-        users.add(user);
-      });
+    try {
+      if (event.snapshot.value != null) {
+        var result = event.snapshot.value as Map;
+        result.forEach((key, value) {
+          log(key);
+          var user = PentellioUser.fromJson(value, userId: key);
+          users.add(user);
+        });
+      }
+    } catch (e) {
+      log(e.toString());
     }
     return users;
   }
@@ -46,14 +50,19 @@ class UserService {
 
   Future<List<PentellioUser>> SearchUsers(String text) async {
     List<PentellioUser> users = [];
-    await _users
-        .orderByChild('email')
-        .startAt(text)
-        .endAt(text + "\uf8ff")
-        .once()
-        .then((value) {
-      users = _MapToUsers(value);
-    });
+
+    try {
+      await _users
+          .orderByChild('email')
+          .startAt(text)
+          .endAt(text + "\uf8ff")
+          .once()
+          .then((value) {
+        users = _MapToUsers(value);
+      });
+    } catch (e) {
+      log(e.toString());
+    }
 
     return users;
   }
@@ -75,8 +84,8 @@ class UserService {
     return null;
   }
 
-  AttachChatToUsers(String uid, String friendId, String chatId) {
-    _users.child('$uid/friends/$friendId').set(chatId);
-    _users.child('$friendId/friends/$uid').set(chatId);
+  AttachChatToUsers(String uid, String friendId, String chatId) async {
+    await _users.child('$uid/friends/$friendId').set(chatId);
+    await _users.child('$friendId/friends/$uid').set(chatId);
   }
 }

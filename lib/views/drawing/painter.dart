@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 
-class SinglePath {
-  var path = <Offset>[];
-  final Color color;
-  final double width;
-
-  SinglePath(this.path, this.color, this.width);
-}
+import '../../models/sketch.dart';
 
 class Brush extends CustomPainter {
-  var sketches = <SinglePath>[];
+  var sketches = <Sketch>[];
 
   Brush({required this.sketches});
 
