@@ -51,6 +51,7 @@ class ChatCubit extends Cubit<EmptyState> {
   ChatService chatService;
   UserService userService;
   Chat? openedChat;
+  Chat? lastOpenedChat;
 
   void StartSearchingUsers() {
     emit(SearchingUsersState(currentUser: currentUser));
@@ -60,6 +61,7 @@ class ChatCubit extends Cubit<EmptyState> {
     closeChat();
 
     openedChat = chat;
+    openedChat!.messages = [];
     chatService.GetChatUpdates(
       chat,
       (msg) {
@@ -118,11 +120,17 @@ class ChatCubit extends Cubit<EmptyState> {
 
   void closeChat() {
     if (openedChat != null) {
-      openedChat!.messages = [];
       chatService.CloseChatUpdates();
+      lastOpenedChat = openedChat;
       openedChat = null;
     }
     emit(UserState(currentUser: currentUser));
+  }
+
+  void openLastOpenedChat() {
+    if (lastOpenedChat != null) {
+      OpenChat(lastOpenedChat!);
+    }
   }
 
   void openDrawStream() {

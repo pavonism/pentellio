@@ -23,9 +23,16 @@ class DrawView extends StatefulWidget {
 class _DrawViewState extends State<DrawView> {
   Color pickerColor = Colors.white;
   Color currentColor = Colors.white;
+  Color fontColor = Colors.black;
 
   void changeColor(Color color) {
     setState(() => pickerColor = color);
+  }
+
+  Color getFontColorForBackground(Color background) {
+    return (background.computeLuminance() > 0.179)
+        ? Colors.black
+        : Colors.white;
   }
 
   Widget buildColorPickerDialog(BuildContext context) {
@@ -52,7 +59,10 @@ class _DrawViewState extends State<DrawView> {
           child: ThemedButton(
             child: const Text('Select'),
             onPressed: () {
-              setState(() => currentColor = pickerColor);
+              setState(() {
+                currentColor = pickerColor;
+                fontColor = getFontColorForBackground(currentColor);
+              });
               Navigator.of(context).pop();
             },
           ),
@@ -78,32 +88,60 @@ class _DrawViewState extends State<DrawView> {
             chatCubit: context.read<ChatCubit>(),
             sketches: widget.chat.sketches,
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.miniEndTop,
-          floatingActionButton:
-              Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            Flexible(
-                child: FloatingActionButton(
-              mini: true,
-              onPressed: () {
-                context.read<ChatCubit>().clearSketches();
-              },
-              child: Icon(Icons.clear),
-            )),
-            SizedBox(
-              width: 16,
-            ),
-            Flexible(
-              child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                  child: FloatingActionButton(
-                    onPressed: () {
-                      showDialog(
-                          context: context, builder: buildColorPickerDialog);
-                    },
-                    child: Icon(Icons.color_lens),
-                  )),
-            ),
-          ]),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.miniStartTop,
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child:
+                Column(mainAxisAlignment: MainAxisAlignment.start, children: [
+              SizedBox(
+                height: 16,
+              ),
+              FloatingActionButton(
+                mini: true,
+                foregroundColor: fontColor,
+                backgroundColor: currentColor,
+                onPressed: () {
+                  context.read<ChatCubit>().clearSketches();
+                },
+                child: Icon(Icons.insert_page_break),
+              ),
+              SizedBox(
+                height: 16,
+              ),
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SizedBox(
+                      height: constraints.maxHeight,
+                      width: 0,
+                    );
+                  },
+                ),
+              ),
+              FloatingActionButton(
+                mini: true,
+                foregroundColor: fontColor,
+                backgroundColor: currentColor,
+                onPressed: () {},
+                child: Icon(Icons.edit),
+              ),
+              SizedBox(
+                height: 16,
+              ),
+              FloatingActionButton(
+                onPressed: () {
+                  showDialog(context: context, builder: buildColorPickerDialog);
+                },
+                foregroundColor: fontColor,
+                backgroundColor: currentColor,
+                child: Icon(Icons.color_lens),
+              ),
+              SizedBox(
+                height: 16,
+              ),
+            ]),
+          ),
         ),
       ),
     );

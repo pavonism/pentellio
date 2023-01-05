@@ -3,11 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/auth_cubit.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
+import 'package:pentellio/models/chat.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/services/user_service.dart';
 import 'package:pentellio/views/chat/chat.dart';
 import 'package:pentellio/views/chat_list/user_tile.dart';
 import 'package:pentellio/views/chat_list/users_panel.dart';
+import 'package:pentellio/views/page_navigator.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/chat_service.dart';
@@ -37,53 +39,63 @@ class _ChatPanelPortraitState extends State<ChatPanelPortrait> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          titleSpacing: 0,
-          title: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            Expanded(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                child: TextField(
-                  controller: _controller,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Search...',
+      child: PageNavigator(
+        duration: const Duration(milliseconds: 200),
+        nextPage: context.read<ChatCubit>().lastOpenedChat != null
+            ? ChatView(
+                chat: context.read<ChatCubit>().lastOpenedChat!,
+                user: widget.user)
+            : null,
+        onNextPage: context.read<ChatCubit>().openLastOpenedChat,
+        child: Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            titleSpacing: 0,
+            title: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              Expanded(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  child: TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Search...',
+                    ),
                   ),
                 ),
               ),
-            ),
-            IconButton(
-              onPressed: () {
-                context.read<ChatCubit>().StartSearchingUsers();
-              },
-              icon: const Icon(Icons.add_comment),
-              splashRadius: 25,
-            ),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.account_circle),
-              splashRadius: 25,
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  foregroundColor: Colors.white),
-              child: const Text("Log Out"),
-              onPressed: () {
-                context.read<AuthCubit>().signOut();
-              },
-            ),
-          ]),
+              IconButton(
+                onPressed: () {
+                  context.read<ChatCubit>().StartSearchingUsers();
+                },
+                icon: const Icon(Icons.add_comment),
+                splashRadius: 25,
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.account_circle),
+                splashRadius: 25,
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: Colors.white),
+                child: const Text("Log Out"),
+                onPressed: () {
+                  context.read<AuthCubit>().signOut();
+                },
+              ),
+            ]),
+          ),
+          body: Container(
+              decoration:
+                  BoxDecoration(border: Border.all(color: Colors.black)),
+              child: ChatList(
+                user: widget.user,
+              )),
         ),
-        body: Container(
-            decoration: BoxDecoration(border: Border.all(color: Colors.black)),
-            child: ChatList(
-              user: widget.user,
-            )),
       ),
     );
   }

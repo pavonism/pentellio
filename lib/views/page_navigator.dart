@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
-
-import 'animations.dart';
 
 class PageNavigator extends StatefulWidget {
-  PageNavigator(
+  const PageNavigator(
       {super.key,
       required this.child,
       this.nextPage,
@@ -63,7 +59,11 @@ class _PageNavigatorState extends State<PageNavigator>
             setState(() {
               currentAnimation = horizontalMove < 0 ? rightLeave : leftLeave;
             });
-            _controller.value = horizontalMove.abs() / constraints.maxWidth;
+
+            if (widget.nextPage != null && currentAnimation == leftLeave ||
+                widget.previousPage != null && currentAnimation == rightLeave) {
+              _controller.value = horizontalMove.abs() / constraints.maxWidth;
+            }
             horizontalDragEndPosition = details.globalPosition;
           },
           onHorizontalDragEnd: (details) {
@@ -87,7 +87,6 @@ class _PageNavigatorState extends State<PageNavigator>
               });
             }
           },
-          // child: SlideTransition(position: currentAnimation, child: widget.child),
           child: Stack(
             children: [
               if (widget.nextPage != null &&
