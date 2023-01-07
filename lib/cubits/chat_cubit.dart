@@ -107,7 +107,7 @@ class ChatCubit extends Cubit<EmptyState> {
       await chatService.loadChatForFriend(friend);
     }
 
-    OpenChat(friend!);
+    OpenChat(friend);
   }
 
   Future _loadFriends(List<Friend> friends) async {

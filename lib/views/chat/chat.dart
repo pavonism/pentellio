@@ -194,17 +194,14 @@ class MessageTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Container(
               decoration: BoxDecoration(
-                  color: Theme.of(context).backgroundColor,
-                  border: Border.all(color: Colors.black, width: 1),
-                  borderRadius: sender != null
-                      ? BorderRadius.only(
-                          bottomRight: radius,
-                          topLeft: radius,
-                          topRight: radius)
-                      : BorderRadius.only(
-                          bottomLeft: radius,
-                          topLeft: radius,
-                          topRight: radius)),
+                color: Theme.of(context).backgroundColor,
+                border: Border.all(color: Colors.black, width: 1),
+                borderRadius: sender != null
+                    ? BorderRadius.only(
+                        bottomRight: radius, topLeft: radius, topRight: radius)
+                    : BorderRadius.only(
+                        bottomLeft: radius, topLeft: radius, topRight: radius),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
@@ -216,11 +213,28 @@ class MessageTile extends StatelessWidget {
                       Text(
                         sender!,
                         textAlign: TextAlign.right,
+                        style: const TextStyle(color: Colors.lightBlueAccent),
                       ),
-                    Text(message.content),
-                    Text(
-                      message.sentTime.time(),
-                      style: const TextStyle(fontSize: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            message.content,
+                            softWrap: true,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 16,
+                        ),
+                        Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Text(
+                            message.sentTime.time(),
+                            textScaleFactor: 0.65,
+                          ),
+                        )
+                      ],
                     )
                   ],
                 ),
