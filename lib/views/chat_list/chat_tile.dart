@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/widgets/date_time_extensions.dart';
-import 'package:universal_html/html.dart';
 
 import '../chat/chat.dart';
 

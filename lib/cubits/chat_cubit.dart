@@ -1,13 +1,14 @@
 import 'dart:developer';
 
+import 'package:cross_file/cross_file.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/models/message.dart';
 import 'package:pentellio/models/sketch.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/services/chat_service.dart';
+import 'package:pentellio/services/image_service.dart';
 
-import '../models/chat.dart';
 import '../services/user_service.dart';
 
 class EmptyState {
@@ -42,6 +43,7 @@ class ChatCubit extends Cubit<EmptyState> {
   ChatCubit(
       {required this.chatService,
       required this.userService,
+      required this.storageService,
       required String userId})
       : super(EmptyState()) {
     _AssignUser(userId);
@@ -50,6 +52,7 @@ class ChatCubit extends Cubit<EmptyState> {
   late PentellioUser currentUser;
   ChatService chatService;
   UserService userService;
+  StorageService storageService;
   Friend? openedChat;
   Friend? lastOpenedChat;
 
@@ -61,13 +64,16 @@ class ChatCubit extends Cubit<EmptyState> {
     closeChat();
 
     openedChat = friend;
-    openedChat!.chat.messages = [];
     chatService.GetChatUpdates(
       friend.chat,
       (msg) {
-        friend.chat.messages.add(msg);
-        emit(
-            ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
+        if (friend.chat.messages
+            .where((element) => element.id == msg.id)
+            .isEmpty) {
+          friend.chat.messages.add(msg);
+          emit(ChatOpenedState(
+              openedChat: openedChat!, currentUser: currentUser));
+        }
       },
     );
     emit(ChatOpenedState(openedChat: friend, currentUser: currentUser));
@@ -116,10 +122,19 @@ class ChatCubit extends Cubit<EmptyState> {
     }
   }
 
+  Future _loadChat(Friend friend) async {
+    await chatService.loadChatForFriend(friend);
+    await storageService.loadImagesForChat(friend.chat);
+  }
+
   Future _loadChats(List<Friend> friends) async {
+    List<Future> futures = [];
+
     for (var friend in friends) {
-      await chatService.loadChatForFriend(friend);
+      futures.add(_loadChat(friend));
     }
+
+    await Future.wait(futures);
   }
 
   void sendMessage(String msg) async {
@@ -131,6 +146,42 @@ class ChatCubit extends Cubit<EmptyState> {
                 content: msg,
                 sentBy: currentUser.userId,
                 sentTime: DateTime.now()));
+        emit(
+            ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
+      } catch (e) {
+        log(e.toString(), time: DateTime.now());
+      }
+    }
+  }
+
+  Future sendMessageWithImages(String msg, List<XFile> images) async {
+    if (openedChat != null) {
+      try {
+        String msgId = chatService.createMessageEntry(openedChat!.chatId);
+        int imageCounter = 0;
+        var imageMessages = images
+            .map((e) => ImageMessageContent(
+                  id: "${msgId}_$imageCounter",
+                ))
+            .toList();
+
+        List<Future> futures = [];
+        for (int i = 0; i < imageMessages.length; i++) {
+          futures.add(storageService.uploadChatImage(
+              openedChat!.chatId, imageMessages[i].id, images[i]));
+        }
+
+        Future.wait(futures);
+
+        chatService.sendMessage(
+            openedChat!.chatId,
+            Message(
+              content: msg,
+              sentBy: currentUser.userId,
+              sentTime: DateTime.now(),
+              images: imageMessages,
+            ),
+            msgId: msgId);
         emit(
             ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
       } catch (e) {

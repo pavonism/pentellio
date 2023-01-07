@@ -14,9 +14,15 @@ class ChatService {
   final _chats = FirebaseDatabase.instance.ref("chats");
   StreamSubscription<DatabaseEvent>? subscription;
 
-  void sendMessage(String chatId, Message msg) {
+  String createMessageEntry(String chatId) {
     var ref = _chats.child("$chatId/messages");
-    var newMessage = ref.push();
+    var newMessageEntry = ref.push();
+    return newMessageEntry.key!;
+  }
+
+  void sendMessage(String chatId, Message msg, {String? msgId}) {
+    var ref = _chats.child("$chatId/messages");
+    var newMessage = msgId != null ? ref.child(msgId) : ref.push();
     newMessage.set(msg.toJson());
   }
 

@@ -1,14 +1,18 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/auth_cubit.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
 import 'package:pentellio/models/chat.dart';
 import 'package:pentellio/services/chat_service.dart';
+import 'package:pentellio/services/image_service.dart';
 import 'package:pentellio/services/user_service.dart';
 import 'package:pentellio/views/chat/chat.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
 import 'package:pentellio/widgets/app_state_observer.dart';
 import 'package:provider/provider.dart';
+import 'package:universal_html/html.dart';
 
 import 'chat_list/chat_list.dart';
 import 'chat_list/users_panel.dart';
@@ -28,21 +32,26 @@ class PentellionPages extends StatelessWidget {
         create: (_) {
           return ChatService();
         },
-        child: BlocProvider(
-          create: (context) {
-            return ChatCubit(
-                chatService: context.read(),
-                userService: context.read(),
-                userId: signedInState.uid);
-          },
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return constraints.maxWidth < 600
-                  ? PentellioPagesPortrait()
-                  : PentellioPagesLandscape(
-                      constraints: constraints,
-                    );
+        child: Provider(
+          create: (_) =>
+              StorageService(firebaseStorage: FirebaseStorage.instance),
+          child: BlocProvider(
+            create: (context) {
+              return ChatCubit(
+                  chatService: context.read(),
+                  userService: context.read(),
+                  storageService: context.read(),
+                  userId: signedInState.uid);
             },
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return constraints.maxWidth < 600
+                    ? PentellioPagesPortrait()
+                    : PentellioPagesLandscape(
+                        constraints: constraints,
+                      );
+              },
+            ),
           ),
         ),
       ),

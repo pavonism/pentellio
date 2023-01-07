@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
 import 'package:pentellio/models/message.dart';
 import 'package:pentellio/models/user.dart';
@@ -24,6 +25,7 @@ class ChatView extends StatefulWidget {
 
 class _ChatViewState extends State<ChatView> {
   final messageController = TextEditingController();
+  final ImagePicker _imagePicker = ImagePicker();
 
   void sendMessage(BuildContext context) {
     context.read<ChatCubit>().sendMessage(messageController.text);
@@ -133,6 +135,14 @@ class _ChatViewState extends State<ChatView> {
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   child: Row(
                     children: [
+                      IconButton(
+                          onPressed: () async {
+                            var images = await _imagePicker.pickMultiImage();
+                            context.read<ChatCubit>().sendMessageWithImages(
+                                messageController.text, images);
+                            messageController.clear();
+                          },
+                          icon: const Icon(Icons.photo)),
                       SizedBox(width: 8),
                       Expanded(
                         child: TextFormField(
@@ -215,6 +225,9 @@ class MessageTile extends StatelessWidget {
                         textAlign: TextAlign.right,
                         style: const TextStyle(color: Colors.lightBlueAccent),
                       ),
+                    if (message.images.isNotEmpty)
+                      for (var image in message.images)
+                        if (image.content != null) image.content!,
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
