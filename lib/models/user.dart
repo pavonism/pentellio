@@ -1,5 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
-
 import 'chat.dart';
 
 class PentellioUser {
@@ -7,22 +5,26 @@ class PentellioUser {
       {this.email = '',
       this.userId = '',
       this.username = '',
-      this.friends = const []});
-  late String email;
-  late String userId;
+      this.friends = const [],
+      this.lastSeen});
+  String email;
+  String userId;
   String username;
+  DateTime? lastSeen;
   List<Friend> friends;
 
   Map toJson() => {
         'email': email,
         'chats': Friend.listToJson(friends),
         'username': username,
+        'last_seen': lastSeen ?? ''
       };
 
   static PentellioUser fromJson(Object json, {required userId}) {
     var map = json as Map;
     var email = map['email'];
     var username = '';
+    DateTime? lastSeen;
     List<Friend> friends = [];
 
     if (map.containsKey('friends')) {
@@ -33,8 +35,17 @@ class PentellioUser {
       username = map['username'];
     }
 
+    if (map.containsKey('last_seen')) {
+      lastSeen = DateTime.parse(map['last_seen']);
+    }
+
     return PentellioUser(
-        email: email, userId: userId, friends: friends, username: username);
+      email: email,
+      userId: userId,
+      friends: friends,
+      username: username,
+      lastSeen: lastSeen,
+    );
   }
 }
 
@@ -42,6 +53,8 @@ class Friend {
   Friend({required this.uId, required this.chatId});
   String uId;
   String chatId;
+  late Chat chat;
+  late PentellioUser user;
 
   static List<Friend> listFromJson(Map json) {
     List<Friend> friends = [];

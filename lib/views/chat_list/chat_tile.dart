@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pentellio/cubits/chat_cubit.dart';
 import 'package:pentellio/models/user.dart';
+import 'package:pentellio/widgets/date_time_extensions.dart';
+import 'package:universal_html/html.dart';
 
 import '../chat/chat.dart';
 
@@ -10,22 +14,7 @@ class ChatTile extends StatelessWidget {
   final Friend friend;
 
   void goToChat(BuildContext context) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) => Text('test'),
-        transitionDuration: Duration(milliseconds: 200),
-        reverseTransitionDuration: Duration.zero,
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          var tween = Tween(begin: Offset.zero, end: Offset(1.0, 0.0));
-          var rightLeave =
-              animation.drive(Tween(begin: Offset(1.0, 0.0), end: Offset.zero));
-          return SlideTransition(
-            position: rightLeave,
-            child: child,
-          );
-        },
-      ),
-    );
+    context.read<ChatCubit>().OpenChat(friend);
   }
 
   @override
@@ -52,20 +41,38 @@ class ChatTile extends StatelessWidget {
                   imageUrl: 'https://picsum.photos/250?',
                 ),
               ),
+              SizedBox(
+                width: 6,
+              ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 10, right: 10),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          friend.uId,
-                          textAlign: TextAlign.left,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: Text(
+                              friend.user.username,
+                              textAlign: TextAlign.left,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          Flexible(
+                            child: Text(
+                              friend.chat.messages.isNotEmpty
+                                  ? friend.chat.messages.last.sentTime.time()
+                                  : "",
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                  fontSize: 11, color: Colors.white),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(
                         height: 4,
@@ -73,13 +80,14 @@ class ChatTile extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                          friend.chat.messages.isNotEmpty
+                              ? friend.chat.messages.last.content
+                              : "",
                           textAlign: TextAlign.left,
                           textScaleFactor: 0.75,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style:
-                              TextStyle(color: Theme.of(context).primaryColor),
+                          style: TextStyle(color: Colors.grey),
                         ),
                       )
                     ],

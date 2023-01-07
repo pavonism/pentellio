@@ -7,6 +7,7 @@ import 'package:pentellio/services/chat_service.dart';
 import 'package:pentellio/services/user_service.dart';
 import 'package:pentellio/views/chat/chat.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
+import 'package:pentellio/widgets/app_state_observer.dart';
 import 'package:provider/provider.dart';
 
 import 'chat_list/chat_list.dart';
@@ -20,25 +21,29 @@ class PentellionPages extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Provider(
-      create: (_) {
-        return ChatService();
-      },
-      child: BlocProvider(
-        create: (context) {
-          return ChatCubit(
-              chatService: context.read(),
-              userService: context.read(),
-              userId: signedInState.uid);
+    return AppStateObserver(
+      userService: context.read(),
+      uId: signedInState.uid,
+      child: Provider(
+        create: (_) {
+          return ChatService();
         },
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return constraints.maxWidth < 600
-                ? PentellioPagesPortrait()
-                : PentellioPagesLandscape(
-                    constraints: constraints,
-                  );
+        child: BlocProvider(
+          create: (context) {
+            return ChatCubit(
+                chatService: context.read(),
+                userService: context.read(),
+                userId: signedInState.uid);
           },
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return constraints.maxWidth < 600
+                  ? PentellioPagesPortrait()
+                  : PentellioPagesLandscape(
+                      constraints: constraints,
+                    );
+            },
+          ),
         ),
       ),
     );
@@ -55,11 +60,11 @@ class PentellioPagesPortrait extends StatelessWidget {
         if (state is DrawingChatState) {
           return DrawView(
             user: state.currentUser,
-            chat: state.openedChat,
+            friend: state.openedChat,
           );
         } else if (state is ChatOpenedState) {
           return ChatView(
-            chat: state.openedChat,
+            friend: state.openedChat,
             user: state.currentUser,
           );
         } else if (state is SearchingUsersState) {
@@ -96,7 +101,7 @@ class PentellioPagesLandscape extends StatelessWidget {
                 if (state is DrawingChatState) {
                   return DrawView(
                     user: state.currentUser,
-                    chat: state.openedChat,
+                    friend: state.openedChat,
                   );
                 } else if (state is ChatOpenedState) {
                   return ChatPanelPortrait(
@@ -120,7 +125,7 @@ class PentellioPagesLandscape extends StatelessWidget {
             builder: (context, state) {
               if (state is ChatOpenedState) {
                 return ChatView(
-                  chat: state.openedChat,
+                  friend: state.openedChat,
                   user: state.currentUser,
                 );
               }

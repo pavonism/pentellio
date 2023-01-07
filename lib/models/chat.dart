@@ -35,8 +35,7 @@ class Chat {
     if (json.containsKey('messages')) {
       var messagesMap = json['messages'] as Map;
       messagesMap.forEach((key, value) {
-        var msgMap = value as Map;
-        var msg = Message(content: msgMap['content'], sentBy: msgMap['sentBy']);
+        var msg = Message.fromJson(value);
         msg.id = key;
         messages.add(msg);
       });

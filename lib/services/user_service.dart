@@ -88,4 +88,16 @@ class UserService {
     await _users.child('$uid/friends/$friendId').set(chatId);
     await _users.child('$friendId/friends/$uid').set(chatId);
   }
+
+  void userCameBack(String uid) async {
+    await _users.child('$uid/last_seen').remove();
+  }
+
+  void userLeftApp(String uid) async {
+    await _users.child('$uid/last_seen').set(DateTime.now().toString());
+  }
+
+  Future loadFriend(Friend friend) async {
+    friend.user = await GetUser(friend.uId);
+  }
 }

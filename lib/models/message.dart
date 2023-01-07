@@ -1,15 +1,15 @@
+
 class Message {
-  Message({required this.content, required this.sentBy});
+  Message(
+      {required this.content, required this.sentBy, required this.sentTime});
 
   String id = "";
   String content;
   String sentBy;
+  DateTime sentTime;
 
-  Map toJson() => {
-        'content': content,
-        'sentBy': sentBy,
-        'sentTime': DateTime.now().toString()
-      };
+  Map toJson() =>
+      {'content': content, 'sentBy': sentBy, 'sentTime': sentTime.toString()};
 
   static List<Message> listFromJson(Map json) {
     List<Message> msgs = [];
@@ -24,6 +24,9 @@ class Message {
   }
 
   static Message fromJson(Map json) {
-    return Message(content: json['content'], sentBy: json['sentBy']);
+    return Message(
+        content: json['content'],
+        sentBy: json['sentBy'],
+        sentTime: DateTime.parse(json['sentTime']));
   }
 }

@@ -106,4 +106,9 @@ class ChatService {
   void clearSketches(Chat chat) async {
     await _chats.child("${chat.chatId}/sketches").remove();
   }
+
+  Future loadChatForFriend(Friend friend) async {
+    friend.chat = await GetChat(friend.chatId);
+    friend.chat.chatId = friend.chatId;
+  }
 }

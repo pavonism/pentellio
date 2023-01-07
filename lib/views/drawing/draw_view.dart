@@ -11,9 +11,9 @@ import '../../models/chat.dart';
 import '../../models/user.dart';
 
 class DrawView extends StatefulWidget {
-  DrawView({required this.chat, required this.user, super.key});
+  DrawView({required this.friend, required this.user, super.key});
 
-  Chat chat;
+  Friend friend;
   PentellioUser user;
 
   @override
@@ -75,7 +75,7 @@ class _DrawViewState extends State<DrawView> {
   Widget build(BuildContext context) {
     return PageNavigator(
       previousPage: ChatView(
-        chat: widget.chat,
+        friend: widget.friend,
         user: widget.user,
       ),
       onPreviousPage: context.read<ChatCubit>().closeDrawStream,
@@ -86,7 +86,7 @@ class _DrawViewState extends State<DrawView> {
           body: Sketcher(
             color: currentColor,
             chatCubit: context.read<ChatCubit>(),
-            sketches: widget.chat.sketches,
+            sketches: widget.friend.chat.sketches,
           ),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.miniStartTop,

@@ -17,7 +17,7 @@ class UserTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        context.read<ChatCubit>().CreateAndOpenChat(pentellioUser);
+        context.read<ChatCubit>().createAndOpenChat(pentellioUser);
       },
       child: ConstrainedBox(
         constraints: BoxConstraints.tight(const Size(double.infinity, 70)),

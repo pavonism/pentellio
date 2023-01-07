@@ -43,7 +43,7 @@ class _ChatPanelPortraitState extends State<ChatPanelPortrait> {
         duration: const Duration(milliseconds: 200),
         nextPage: context.read<ChatCubit>().lastOpenedChat != null
             ? ChatView(
-                chat: context.read<ChatCubit>().lastOpenedChat!,
+                friend: context.read<ChatCubit>().lastOpenedChat!,
                 user: widget.user)
             : null,
         onNextPage: context.read<ChatCubit>().openLastOpenedChat,
@@ -85,6 +85,7 @@ class _ChatPanelPortraitState extends State<ChatPanelPortrait> {
                 child: const Text("Log Out"),
                 onPressed: () {
                   context.read<AuthCubit>().signOut();
+                  context.read<UserService>().userLeftApp(widget.user.userId);
                 },
               ),
             ]),

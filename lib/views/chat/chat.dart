@@ -2,19 +2,21 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
+import 'package:pentellio/models/message.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/views/chat_list/chat_list.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
+import 'package:pentellio/widgets/date_time_extensions.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
 
 import '../page_navigator.dart';
 import 'package:pentellio/models/chat.dart';
 
 class ChatView extends StatefulWidget {
-  const ChatView({super.key, required this.chat, required this.user});
+  const ChatView({super.key, required this.friend, required this.user});
 
   final PentellioUser user;
-  final Chat chat;
+  final Friend friend;
 
   @override
   State<ChatView> createState() => _ChatViewState();
@@ -24,15 +26,15 @@ class _ChatViewState extends State<ChatView> {
   final messageController = TextEditingController();
 
   void sendMessage(BuildContext context) {
-    context.read<ChatCubit>().SendMessage(messageController.text);
+    context.read<ChatCubit>().sendMessage(messageController.text);
     messageController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
-    var title = widget.chat.userIdToUsername.length == 1
+    var title = widget.friend.chat.userIdToUsername.length == 1
         ? widget.user.username
-        : widget.chat.userIdToUsername.entries
+        : widget.friend.chat.userIdToUsername.entries
             .firstWhere((element) => element.key != widget.user.userId)
             .value;
 
@@ -46,7 +48,7 @@ class _ChatViewState extends State<ChatView> {
           duration: Duration(milliseconds: 200),
           nextPage: DrawView(
             user: widget.user,
-            chat: widget.chat,
+            friend: widget.friend,
           ),
           onNextPage: context.read<ChatCubit>().openDrawStream,
           child: Container(
@@ -81,7 +83,9 @@ class _ChatViewState extends State<ChatView> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(title),
-                              const Text('Last seen...'),
+                              Text(widget.friend.user.lastSeen == null
+                                  ? 'Active'
+                                  : 'Last seen ${widget.friend.user.lastSeen!.timeAgo()}'),
                             ]),
                       ],
                     ),
@@ -101,21 +105,23 @@ class _ChatViewState extends State<ChatView> {
                         builder: (context, constraints) {
                           return ListView.builder(
                             reverse: true,
-                            itemCount: widget.chat.messages.length,
+                            itemCount: widget.friend.chat.messages.length,
                             itemBuilder: (context, index) {
                               var currentUser =
                                   context.read<ChatCubit>().currentUser.userId;
-                              var msg = widget.chat.messages[
-                                  widget.chat.messages.length - index - 1];
+                              var msg = widget.friend.chat.messages[
+                                  widget.friend.chat.messages.length -
+                                      index -
+                                      1];
                               return MessageTile(
                                   msg.sentBy == currentUser
                                       ? null
-                                      : widget
-                                          .chat.userIdToUsername[msg.sentBy],
+                                      : widget.friend.chat
+                                          .userIdToUsername[msg.sentBy],
                                   constraints.maxWidth * 0.6 < 300
                                       ? constraints.maxWidth
                                       : 300 + constraints.maxWidth * 0.3,
-                                  message: msg.content);
+                                  message: msg);
                             },
                           );
                         },
@@ -169,7 +175,7 @@ class MessageTile extends StatelessWidget {
   MessageTile(this.sender, this.width, {super.key, required this.message});
 
   final double width;
-  String message;
+  Message message;
   String? sender;
 
   @override
@@ -211,7 +217,11 @@ class MessageTile extends StatelessWidget {
                         sender!,
                         textAlign: TextAlign.right,
                       ),
-                    Text(message)
+                    Text(message.content),
+                    Text(
+                      message.sentTime.time(),
+                      style: const TextStyle(fontSize: 8),
+                    )
                   ],
                 ),
               ),
