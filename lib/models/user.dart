@@ -1,3 +1,6 @@
+import 'package:collection/collection.dart';
+import 'package:pentellio/models/message.dart';
+
 import 'chat.dart';
 
 class PentellioUser {
@@ -5,13 +8,19 @@ class PentellioUser {
       {this.email = '',
       this.userId = '',
       this.username = '',
-      this.friends = const [],
-      this.lastSeen});
+      this.lastSeen,
+      List<Friend> friends = const []})
+      : friends = FriendCollection() {
+    for (var element in friends) {
+      this.friends.add(element);
+    }
+  }
+
   String email;
   String userId;
   String username;
   DateTime? lastSeen;
-  List<Friend> friends;
+  FriendCollection friends;
 
   Map toJson() => {
         'email': email,
@@ -42,8 +51,8 @@ class PentellioUser {
     return PentellioUser(
       email: email,
       userId: userId,
-      friends: friends,
       username: username,
+      friends: friends,
       lastSeen: lastSeen,
     );
   }
@@ -53,7 +62,7 @@ class Friend {
   Friend({required this.uId, required this.chatId});
   String uId;
   String chatId;
-  late Chat chat;
+  Chat chat = Chat();
   late PentellioUser user;
 
   static List<Friend> listFromJson(Map json) {
@@ -64,7 +73,7 @@ class Friend {
     return friends;
   }
 
-  static Map listToJson(List<Friend> friends) {
+  static Map listToJson(Iterable<Friend> friends) {
     return <String, dynamic>{for (var f in friends) f.uId: f.chatId};
   }
 
@@ -74,5 +83,42 @@ class Friend {
 
   static Friend fromJson(Map json) {
     return listFromJson(json).first;
+  }
+}
+
+class FriendCollection extends DelegatingList<Friend> {
+  FriendCollection() : super([]);
+
+  static int _compareChats(Friend friend1, Friend friend2) {
+    if (friend1.chat.messages.isEmpty) {
+      return friend2.chat.messages.isEmpty ? 0 : 1;
+    }
+
+    if (friend2.chat.messages.isEmpty) {
+      return friend1.chat.messages.isEmpty ? 0 : 1;
+    }
+
+    return friend1.chat.messages.last.sentTime
+        .compareTo(friend2.chat.messages.last.sentTime);
+  }
+
+  void addMessage(Friend friend, Message msg) {
+    friend.chat.messages.add(msg);
+    updatePriority(friend);
+  }
+
+  @override
+  void add(Friend value) {
+    int i = 0;
+    for (i; i < length; i++) {
+      if (_compareChats(super[i], value) < 0) break;
+    }
+
+    super.insert(i, value);
+  }
+
+  void updatePriority(Friend friend) {
+    super.remove(friend);
+    add(friend);
   }
 }

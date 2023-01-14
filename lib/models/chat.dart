@@ -3,7 +3,7 @@ import 'package:pentellio/models/sketch.dart';
 
 class Chat {
   Chat(
-      {required this.userIdToUsername,
+      {this.userIdToUsername = const {},
       this.messages = const [],
       this.sketches = const [],
       this.title = ''});

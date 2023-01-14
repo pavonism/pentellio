@@ -46,7 +46,7 @@ class ChatCubit extends Cubit<EmptyState> {
       required this.storageService,
       required String userId})
       : super(EmptyState()) {
-    _AssignUser(userId);
+    _initialize(userId);
   }
 
   late PentellioUser currentUser;
@@ -68,11 +68,11 @@ class ChatCubit extends Cubit<EmptyState> {
   }
 
   void _messageReceived(Message newMessage, Friend friend) {
-    friend.chat.messages.add(newMessage);
+    currentUser.friends.addMessage(friend, newMessage);
     emit(ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
   }
 
-  void _AssignUser(String userId) async {
+  void _initialize(String userId) async {
     currentUser = await userService.GetUser(userId);
     await _loadFriends(currentUser.friends);
     await _loadChats(currentUser.friends);
@@ -107,7 +107,7 @@ class ChatCubit extends Cubit<EmptyState> {
     openChat(friend);
   }
 
-  Future _loadFriends(List<Friend> friends) async {
+  Future _loadFriends(FriendCollection friends) async {
     for (var friend in friends) {
       await userService.loadFriend(friend);
     }
