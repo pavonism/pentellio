@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:collection/collection.dart';
 import 'package:pentellio/models/message.dart';
 
@@ -9,6 +11,7 @@ class PentellioUser {
       this.userId = '',
       this.username = '',
       this.lastSeen,
+      this.profilePictureUrl = "",
       List<Friend> friends = const []})
       : friends = FriendCollection() {
     for (var element in friends) {
@@ -19,6 +22,7 @@ class PentellioUser {
   String email;
   String userId;
   String username;
+  String profilePictureUrl;
   DateTime? lastSeen;
   FriendCollection friends;
 
@@ -33,6 +37,7 @@ class PentellioUser {
     var map = json as Map;
     var email = map['email'];
     var username = '';
+    var profilePicture = "";
     DateTime? lastSeen;
     List<Friend> friends = [];
 
@@ -48,12 +53,17 @@ class PentellioUser {
       lastSeen = DateTime.parse(map['last_seen']);
     }
 
+    if (map.containsKey("profile_picture")) {
+      profilePicture = map["profile_picture"];
+    }
+
     return PentellioUser(
       email: email,
       userId: userId,
       username: username,
       friends: friends,
       lastSeen: lastSeen,
+      profilePictureUrl: profilePicture,
     );
   }
 }
@@ -103,8 +113,12 @@ class FriendCollection extends DelegatingList<Friend> {
   }
 
   void addMessage(Friend friend, Message msg) {
-    friend.chat.messages.add(msg);
-    updatePriority(friend);
+    try {
+      friend.chat.messages.add(msg);
+      updatePriority(friend);
+    } catch (e) {
+      log(e.toString(), name: "FriendCollection: addMessage");
+    }
   }
 
   @override

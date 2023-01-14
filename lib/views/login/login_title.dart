@@ -5,25 +5,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/auth_cubit.dart';
 
-class PentellioTitle extends StatefulWidget {
-  const PentellioTitle({Key? key, this.twoLines = false}) : super(key: key);
+class PentellioText extends StatefulWidget {
+  const PentellioText(
+      {Key? key,
+      this.fontSize = 100,
+      this.text = "",
+      this.onFinished,
+      this.align = TextAlign.center,
+      this.animate = true})
+      : super(key: key);
 
-  final bool twoLines;
+  final double fontSize;
+  final String text;
+  final void Function()? onFinished;
+  final TextAlign align;
+  final bool animate;
 
   @override
-  State<PentellioTitle> createState() => _PentellioTitleState();
+  State<PentellioText> createState() => _PentellioTextState();
 }
 
-class _PentellioTitleState extends State<PentellioTitle> {
+class _PentellioTextState extends State<PentellioText> {
+  bool animationLaunched = false;
+
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: DefaultTextStyle(
-            maxLines: 2,
             style: TextStyle(
-              fontSize: 100,
+              fontSize: widget.fontSize,
               fontFamily: 'FugglesPro-Regular',
               color: Theme.of(context).primaryColor,
               fontFeatures: const [
@@ -32,19 +44,19 @@ class _PentellioTitleState extends State<PentellioTitle> {
             ),
             child:
                 // context.read<AuthCubit>().state is NeedsSigningInState ?
-                AnimatedTextKit(
-              onFinished: () => context.read<AuthCubit>().startLoggingIn(),
-              isRepeatingAnimation: false,
-              animatedTexts: [
-                TyperAnimatedText(
-                  widget.twoLines
-                      ? 'Welcome to \n Pentellio!'
-                      : 'Welcome to Pentellio!',
-                  textAlign: TextAlign.center,
-                  speed: const Duration(milliseconds: 60),
-                )
-              ],
-            )
+                widget.animate
+                    ? AnimatedTextKit(
+                        onFinished: widget.onFinished,
+                        isRepeatingAnimation: false,
+                        animatedTexts: [
+                          TyperAnimatedText(
+                            widget.text,
+                            textAlign: widget.align,
+                            speed: const Duration(milliseconds: 60),
+                          )
+                        ],
+                      )
+                    : Text(widget.text)
             // : Text(
             //     widget.twoLines
             //         ? 'Welcome to \n Pentellio!'

@@ -49,6 +49,13 @@ class StorageService extends CacheManager with ImageCacheManager {
       }
     }
   }
+
+  Future<String> uploadProfilePicture(String userId, XFile img) async {
+    var ref = firebaseStorage.ref('users/$userId');
+    var data = await img.readAsBytes();
+    await ref.putData(data);
+    return await ref.getDownloadURL();
+  }
 }
 
 class IOFileSystem implements c.FileSystem {

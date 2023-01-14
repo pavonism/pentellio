@@ -5,6 +5,7 @@ import 'package:pentellio/cubits/chat_cubit.dart';
 import 'package:pentellio/views/chat/chat.dart';
 import 'package:pentellio/views/drawing/sketcher.dart';
 import 'package:pentellio/views/page_navigator.dart';
+import 'package:pentellio/widgets/color_extensions.dart';
 import 'package:pentellio/widgets/themed_button.dart';
 
 import '../../models/chat.dart';
@@ -27,12 +28,6 @@ class _DrawViewState extends State<DrawView> {
 
   void changeColor(Color color) {
     setState(() => pickerColor = color);
-  }
-
-  Color getFontColorForBackground(Color background) {
-    return (background.computeLuminance() > 0.179)
-        ? Colors.black
-        : Colors.white;
   }
 
   Widget buildColorPickerDialog(BuildContext context) {
@@ -61,7 +56,7 @@ class _DrawViewState extends State<DrawView> {
             onPressed: () {
               setState(() {
                 currentColor = pickerColor;
-                fontColor = getFontColorForBackground(currentColor);
+                fontColor = currentColor.getForegroundColor();
               });
               Navigator.of(context).pop();
             },

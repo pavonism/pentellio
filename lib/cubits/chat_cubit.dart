@@ -39,6 +39,10 @@ class DrawingChatState extends ChatState {
   DrawingChatState({required super.openedChat, required super.currentUser});
 }
 
+class SettingsState extends UserState {
+  SettingsState({required super.currentUser});
+}
+
 class ChatCubit extends Cubit<EmptyState> {
   ChatCubit(
       {required this.chatService,
@@ -69,11 +73,14 @@ class ChatCubit extends Cubit<EmptyState> {
 
   void _messageReceived(Message newMessage, Friend friend) {
     currentUser.friends.addMessage(friend, newMessage);
-    emit(ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
+
+    if (openedChat != null) {
+      emit(ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
+    }
   }
 
   void _initialize(String userId) async {
-    currentUser = await userService.GetUser(userId);
+    currentUser = await userService.getUser(userId);
     await _loadFriends(currentUser.friends);
     await _loadChats(currentUser.friends);
     _listenChats(currentUser.friends);
@@ -81,7 +88,7 @@ class ChatCubit extends Cubit<EmptyState> {
   }
 
   void SearchUsers(String phrase) async {
-    var users = await userService.SearchUsers(phrase);
+    var users = await userService.searchUsers(phrase);
     emit(SearchingUsersState(currentUser: currentUser));
   }
 
@@ -96,7 +103,7 @@ class ChatCubit extends Cubit<EmptyState> {
 
     if (friend == null) {
       var chatId = await chatService.CreateNewChat(currentUser, user);
-      await userService.AttachChatToUsers(
+      await userService.attachChatToUsers(
           currentUser.userId, user.userId, chatId);
       friend = Friend(uId: user.userId, chatId: chatId);
       currentUser.friends.add(friend);
@@ -217,5 +224,19 @@ class ChatCubit extends Cubit<EmptyState> {
       chatService.listenChat(
           friend.chat, (msg) => _messageReceived(msg, friend));
     }
+  }
+
+  void viewSettings() {
+    emit(SettingsState(currentUser: currentUser));
+  }
+
+  void showChatList() {
+    emit(UserState(currentUser: currentUser));
+  }
+
+  void changeProfilePicture(XFile image) async {
+    String url =
+        await storageService.uploadProfilePicture(currentUser.userId, image);
+    userService.setProfilePicture(currentUser, url);
   }
 }

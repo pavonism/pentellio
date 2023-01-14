@@ -8,17 +8,16 @@ import 'package:pentellio/models/chat.dart';
 import 'package:pentellio/models/user.dart';
 
 class UserService {
-  UserService() {
-  }
+  UserService() {}
 
   final _users = FirebaseDatabase.instance.ref('users');
 
-  void AddNewUser(PentellioUser user) {
+  void addNewUser(PentellioUser user) {
     var newUserRef = _users.child(user.userId);
     newUserRef.set(user.toJson());
   }
 
-  List<PentellioUser> _MapToUsers(DatabaseEvent event) {
+  List<PentellioUser> _mapToUsers(DatabaseEvent event) {
     List<PentellioUser> users = [];
 
     try {
@@ -31,44 +30,44 @@ class UserService {
         });
       }
     } catch (e) {
-      log(e.toString());
+      log(e.toString(), name: _mapToUsers.toString());
     }
     return users;
   }
 
-  Future<PentellioUser> GetUser(String userId) async {
+  Future<PentellioUser> getUser(String userId) async {
     try {
       var data = await FirebaseDatabase.instance.ref('users/' + userId).get();
 
       var map = data.value as Map;
       return PentellioUser.fromJson(data.value!, userId: data.key!);
     } catch (e) {
-      log(e.toString());
+      log(e.toString(), name: getUser.toString());
     }
 
     return PentellioUser(email: '', userId: '');
   }
 
-  Future<List<PentellioUser>> SearchUsers(String text) async {
+  Future<List<PentellioUser>> searchUsers(String text) async {
     List<PentellioUser> users = [];
 
     try {
       await _users
-          .orderByChild('email')
+          .orderByChild('username')
           .startAt(text)
-          .endAt(text + "\uf8ff")
+          .endAt("$text\uf8ff")
           .once()
           .then((value) {
-        users = _MapToUsers(value);
+        users = _mapToUsers(value);
       });
     } catch (e) {
-      log(e.toString());
+      log(e.toString(), name: searchUsers.toString());
     }
 
     return users;
   }
 
-  void AddFriend(String uId, String friendId, String chatId) async {
+  void addFriend(String uId, String friendId, String chatId) async {
     var friend = Friend(uId: friendId, chatId: chatId);
     await _users.child('$uId/friends').set(Friend.toJson(friend));
   }
@@ -85,7 +84,7 @@ class UserService {
     return null;
   }
 
-  AttachChatToUsers(String uid, String friendId, String chatId) async {
+  attachChatToUsers(String uid, String friendId, String chatId) async {
     await _users.child('$uid/friends/$friendId').set(chatId);
     await _users.child('$friendId/friends/$uid').set(chatId);
   }
@@ -99,6 +98,12 @@ class UserService {
   }
 
   Future loadFriend(Friend friend) async {
-    friend.user = await GetUser(friend.uId);
+    friend.user = await getUser(friend.uId);
+  }
+
+  void setProfilePicture(PentellioUser currentUser, String url) {
+    var ref = _users.child("${currentUser.userId}/profile_picture");
+    ref.set(url);
+    currentUser.profilePictureUrl = url;
   }
 }

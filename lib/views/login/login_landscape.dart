@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../cubits/auth_cubit.dart';
 import 'login_title.dart';
 
 class LoginLandscape extends StatelessWidget {
@@ -17,10 +19,11 @@ class LoginLandscape extends StatelessWidget {
           ? Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
               SizedBox(
                 width: constraints.maxWidth / 2,
-                child: const Center(
+                child: Center(
                   child: FittedBox(
-                    child: PentellioTitle(
-                      twoLines: true,
+                    child: PentellioText(
+                      onFinished: context.read<AuthCubit>().startLoggingIn,
+                      text: 'Welcome to \n Pentellio!',
                     ),
                   ),
                 ),
@@ -35,7 +38,12 @@ class LoginLandscape extends StatelessWidget {
           : Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                const Expanded(child: Center(child: PentellioTitle())),
+                Expanded(
+                    child: Center(
+                        child: PentellioText(
+                  onFinished: context.read<AuthCubit>().startLoggingIn,
+                  text: 'Welcome to Pentellio!',
+                ))),
                 Expanded(
                   child: Center(child: child),
                 )

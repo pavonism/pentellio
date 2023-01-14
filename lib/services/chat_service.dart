@@ -48,12 +48,12 @@ class ChatService {
     return ref.key!;
   }
 
-  Future<Chat> GetChat(String chatId) async {
+  Future<Chat> getChat(String chatId) async {
     try {
       var snapshot = await _chats.child(chatId).get();
       return Chat.fromJson(snapshot.value as Map);
     } catch (e) {
-      log(e.toString());
+      log(e.toString(), name: "getChat");
     }
 
     return Chat(messages: [], userIdToUsername: {});
@@ -69,10 +69,10 @@ class ChatService {
         .listen((event) {
       if (event.snapshot.value != null) {
         try {
-          var msgs = Message.fromJson(event.snapshot.value as Map);
-          onNewMessages(msgs);
+          var msg = Message.fromJson(event.snapshot.value as Map);
+          onNewMessages(msg);
         } catch (e) {
-          log(e.toString(), time: DateTime.now());
+          log(e.toString(), name: "listenChat");
         }
       }
     });
@@ -105,7 +105,7 @@ class ChatService {
   }
 
   Future loadChatForFriend(Friend friend) async {
-    friend.chat = await GetChat(friend.chatId);
+    friend.chat = await getChat(friend.chatId);
     friend.chat.chatId = friend.chatId;
     friend.chat.messages = [];
   }

@@ -9,7 +9,9 @@ import 'package:pentellio/services/user_service.dart';
 import 'package:pentellio/views/chat/chat.dart';
 import 'package:pentellio/views/chat_list/user_tile.dart';
 import 'package:pentellio/views/chat_list/users_panel.dart';
+import 'package:pentellio/views/login/login_title.dart';
 import 'package:pentellio/views/page_navigator.dart';
+import 'package:pentellio/views/settings/settings.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/chat_service.dart';
@@ -47,55 +49,48 @@ class _ChatPanelPortraitState extends State<ChatPanelPortrait> {
                 user: widget.user)
             : null,
         onNextPage: context.read<ChatCubit>().openLastOpenedChat,
+        previousPage: SettingsView(user: widget.user),
+        onPreviousPage: context.read<ChatCubit>().viewSettings,
         child: Scaffold(
           appBar: AppBar(
+            backgroundColor: Theme.of(context).backgroundColor,
             automaticallyImplyLeading: false,
             titleSpacing: 0,
             title: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-              Expanded(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Search...',
-                    ),
-                  ),
-                ),
+              const SizedBox(
+                width: 4,
               ),
+              IconButton(
+                  onPressed: () {
+                    context.read<ChatCubit>().viewSettings();
+                  },
+                  icon: const Icon(Icons.menu)),
+              const SizedBox(
+                width: 4,
+              ),
+              Expanded(
+                  child: Align(
+                alignment: Alignment.centerLeft,
+                child: PentellioText(
+                  fontSize:
+                      Theme.of(context).appBarTheme.titleTextStyle?.fontSize ??
+                          40,
+                  text: "Pentellio",
+                  animate: false,
+                ),
+              )),
               IconButton(
                 onPressed: () {
                   context.read<ChatCubit>().StartSearchingUsers();
                 },
-                icon: const Icon(Icons.add_comment),
+                icon: const Icon(Icons.search),
                 splashRadius: 25,
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.account_circle),
-                splashRadius: 25,
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    foregroundColor: Colors.white),
-                child: const Text("Log Out"),
-                onPressed: () {
-                  context.read<AuthCubit>().signOut();
-                  context.read<UserService>().userLeftApp(widget.user.userId);
-                },
               ),
             ]),
           ),
-          body: Container(
-              decoration:
-                  BoxDecoration(border: Border.all(color: Colors.black)),
-              child: ChatList(
-                user: widget.user,
-              )),
+          body: ChatList(
+            user: widget.user,
+          ),
         ),
       ),
     );

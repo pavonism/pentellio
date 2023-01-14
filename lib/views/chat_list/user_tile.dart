@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -28,18 +29,24 @@ class UserTile extends StatelessWidget {
                   strokeAlign: StrokeAlign.center,
                   width: 0.05)),
           child: Padding(
-            padding:
-                const EdgeInsets.only(left: 5, bottom: 10, right: 5, top: 10),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: Row(
               children: [
                 ClipRRect(
                   borderRadius:
                       const BorderRadius.all(Radius.circular(50 * 0.4)),
-                  child: CachedNetworkImage(
-                    placeholder: (context, url) =>
-                        const CircularProgressIndicator(),
-                    imageUrl: 'https://picsum.photos/250?',
-                  ),
+                  child: pentellioUser.profilePictureUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          cacheManager: kIsWeb ? null : context.read(),
+                          placeholder: (context, url) =>
+                              const CircularProgressIndicator(),
+                          imageUrl: pentellioUser.profilePictureUrl,
+                        )
+                      : const SizedBox(
+                          width: 54,
+                          height: 54,
+                          child: ColoredBox(color: Colors.blue),
+                        ),
                 ),
                 Expanded(
                   child: Padding(
@@ -50,7 +57,7 @@ class UserTile extends StatelessWidget {
                         Align(
                           alignment: Alignment.topLeft,
                           child: Text(
-                            pentellioUser.email,
+                            pentellioUser.username,
                             textAlign: TextAlign.left,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(color: Colors.white),

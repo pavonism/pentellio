@@ -37,7 +37,7 @@ class AuthCubit extends Cubit<AuthState> {
         case SignUpResult.success:
           var userId = authService.GetCurrentUserId()!;
           emit(SignedInState(uid: userId));
-          userService.AddNewUser(
+          userService.addNewUser(
               PentellioUser(email: email, userId: userId, username: username));
           break;
         case SignUpResult.invalidEmail:

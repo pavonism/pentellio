@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,18 +30,24 @@ class ChatTile extends StatelessWidget {
                   strokeAlign: StrokeAlign.center,
                   width: 0.05)),
           child: Padding(
-            padding:
-                const EdgeInsets.only(left: 5, bottom: 10, right: 5, top: 10),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: Row(children: [
               ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(50 * 0.4)),
-                child: CachedNetworkImage(
-                  placeholder: (context, url) =>
-                      const CircularProgressIndicator(),
-                  imageUrl: 'https://picsum.photos/250?',
-                ),
+                child: friend.user.profilePictureUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        cacheManager: kIsWeb ? null : context.read(),
+                        placeholder: (context, url) =>
+                            const CircularProgressIndicator(),
+                        imageUrl: friend.user.profilePictureUrl,
+                      )
+                    : const SizedBox(
+                        width: 54,
+                        height: 54,
+                        child: ColoredBox(color: Colors.blue),
+                      ),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 6,
               ),
               Expanded(
@@ -78,16 +85,38 @@ class ChatTile extends StatelessWidget {
                       ),
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: Text(
-                          friend.chat.messages.isNotEmpty
-                              ? friend.chat.messages.last.content
-                              : "",
-                          textAlign: TextAlign.left,
-                          textScaleFactor: 0.75,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: Colors.grey),
-                        ),
+                        child: friend.chat.messages.isNotEmpty
+                            ? Row(children: [
+                                for (var element
+                                    in friend.chat.messages.last.images)
+                                  SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CachedNetworkImage(
+                                        cacheManager:
+                                            kIsWeb ? null : context.read(),
+                                        imageUrl: element.url),
+                                  ),
+                                if (friend.chat.messages.last.images.isNotEmpty)
+                                  const SizedBox(
+                                    width: 4,
+                                  ),
+                                Text(
+                                    friend.chat.messages.isNotEmpty
+                                        ? friend.chat.messages.last.content
+                                        : "",
+                                    textAlign: TextAlign.left,
+                                    textScaleFactor: 0.8,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .caption
+                                          ?.color,
+                                    )),
+                              ])
+                            : const Text(""),
                       )
                     ],
                   ),

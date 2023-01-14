@@ -10,6 +10,7 @@ import 'package:pentellio/services/image_service.dart';
 import 'package:pentellio/services/user_service.dart';
 import 'package:pentellio/views/chat/chat.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
+import 'package:pentellio/views/settings/settings.dart';
 import 'package:pentellio/widgets/app_state_observer.dart';
 import 'package:provider/provider.dart';
 import 'package:universal_html/html.dart';
@@ -66,7 +67,11 @@ class PentellioPagesPortrait extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ChatCubit, EmptyState>(
       builder: (context, state) {
-        if (state is DrawingChatState) {
+        if (state is SettingsState) {
+          return SettingsView(
+            user: state.currentUser,
+          );
+        } else if (state is DrawingChatState) {
           return DrawView(
             user: state.currentUser,
             friend: state.openedChat,
@@ -77,7 +82,7 @@ class PentellioPagesPortrait extends StatelessWidget {
             user: state.currentUser,
           );
         } else if (state is SearchingUsersState) {
-          return const UserListPanel();
+          return UserListPanel(user: state.currentUser);
         } else if (state is UserState) {
           return ChatPanelPortrait(
             user: state.currentUser,
@@ -116,8 +121,8 @@ class PentellioPagesLandscape extends StatelessWidget {
                   return ChatPanelPortrait(
                     user: state.currentUser,
                   );
-                } else if (state.isSearchingUsers ?? false) {
-                  return UserListPanel();
+                } else if (state is SearchingUsersState) {
+                  return UserListPanel(user: state.currentUser);
                 } else if (state is UserState) {
                   return ChatPanelPortrait(
                     user: state.currentUser,

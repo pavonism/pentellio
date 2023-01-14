@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/views/login/login_title.dart';
+
+import '../../cubits/auth_cubit.dart';
 
 class LoginPortrait extends StatelessWidget {
   const LoginPortrait({
@@ -18,8 +21,12 @@ class LoginPortrait extends StatelessWidget {
                 children: [
                   SizedBox(
                     height: constraints.maxHeight / 2,
-                    child: const Center(
-                      child: FittedBox(child: PentellioTitle(twoLines: true)),
+                    child: Center(
+                      child: FittedBox(
+                          child: PentellioText(
+                        onFinished: context.read<AuthCubit>().startLoggingIn,
+                        text: 'Welcome to \n Pentellio!',
+                      )),
                     ),
                   ),
                   SizedBox(
@@ -33,7 +40,11 @@ class LoginPortrait extends StatelessWidget {
                 ],
               )
             : Column(children: [
-                const Expanded(child: PentellioTitle()),
+                Expanded(
+                    child: PentellioText(
+                  onFinished: context.read<AuthCubit>().startLoggingIn,
+                  text: 'Welcome to Pentellio!',
+                )),
                 Expanded(
                   child: Center(
                     child: child,

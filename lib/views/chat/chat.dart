@@ -43,59 +43,80 @@ class _ChatViewState extends State<ChatView> {
             .firstWhere((element) => element.key != widget.user.userId)
             .value;
 
-    return Scaffold(
-      body: SafeArea(
-        child: PageNavigator(
-          onPreviousPage: () => context.read<ChatCubit>().closeChat(),
-          previousPage: ChatPanelPortrait(
-            user: widget.user,
-          ),
-          duration: Duration(milliseconds: 200),
-          nextPage: DrawView(
-            user: widget.user,
-            friend: widget.friend,
-          ),
-          onNextPage: context.read<ChatCubit>().openDrawStream,
-          child: Container(
-            color: Color(0xFF191C1F),
-            child: Column(
+    return SafeArea(
+      child: PageNavigator(
+        onPreviousPage: () => context.read<ChatCubit>().closeChat(),
+        previousPage: ChatPanelPortrait(
+          user: widget.user,
+        ),
+        duration: Duration(milliseconds: 200),
+        nextPage: DrawView(
+          user: widget.user,
+          friend: widget.friend,
+        ),
+        onNextPage: context.read<ChatCubit>().openDrawStream,
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).backgroundColor,
+            titleTextStyle: TextStyle(
+                fontSize: Theme.of(context).textTheme.labelLarge?.fontSize,
+                color: Theme.of(context).textTheme.labelLarge?.color),
+            automaticallyImplyLeading: false,
+            titleSpacing: 0,
+            title: Row(
               children: [
-                ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxHeight: 50,
-                  ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).backgroundColor,
-                      border: Border.all(width: 0.05),
-                    ),
-                    padding: EdgeInsets.all(4.0),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          iconSize: 20,
-                          icon:
-                              const Icon(Icons.arrow_back, color: Colors.white),
-                          onPressed: () =>
-                              context.read<ChatCubit>().closeChat(),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 5),
-                          child: RoundedRect(40),
-                        ),
-                        Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(title),
-                              Text(widget.friend.user.lastSeen == null
-                                  ? 'Active'
-                                  : 'Last seen ${widget.friend.user.lastSeen!.timeAgo()}'),
-                            ]),
-                      ],
+                IconButton(
+                  iconSize: 20,
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => context.read<ChatCubit>().closeChat(),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 5),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(40 * 0.2)),
+                    child: SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: widget.friend.user.profilePictureUrl.isNotEmpty
+                          ? CachedNetworkImage(
+                              cacheManager: kIsWeb ? null : context.read(),
+                              placeholder: (context, url) =>
+                                  const CircularProgressIndicator(),
+                              imageUrl: widget.friend.user.profilePictureUrl,
+                            )
+                          : ColoredBox(color: Colors.blue),
                     ),
                   ),
                 ),
+                SizedBox(
+                  width: 4,
+                ),
+                Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title),
+                      Text(widget.friend.user.lastSeen == null
+                          ? 'Active'
+                          : 'Last seen ${widget.friend.user.lastSeen!.timeAgo()}'),
+                    ]),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                        onPressed: () {
+                          context.read<ChatCubit>().openDrawStream();
+                        },
+                        icon: const Icon(Icons.draw)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          body: Container(
+            color: Color(0xFF191C1F),
+            child: Column(
+              children: [
                 Expanded(
                   child: SelectionArea(
                     child: ScrollConfiguration(
@@ -138,6 +159,18 @@ class _ChatViewState extends State<ChatView> {
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   child: Row(
                     children: [
+                      if (!kIsWeb)
+                        IconButton(
+                            onPressed: () async {
+                              var image = await _imagePicker.pickImage(
+                                  source: ImageSource.camera);
+                              if (image != null) {
+                                context.read<ChatCubit>().sendMessageWithImages(
+                                    messageController.text, [image]);
+                                messageController.clear();
+                              }
+                            },
+                            icon: const Icon(Icons.camera_alt_outlined)),
                       IconButton(
                           onPressed: () async {
                             var images = await _imagePicker.pickMultiImage();
@@ -196,8 +229,8 @@ class MessageTile extends StatelessWidget {
       return AlertDialog(
           backgroundColor: Colors.transparent,
           content: SizedBox(
-            width: constraints.maxWidth * 0.9,
-            height: constraints.maxHeight * 0.9,
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
             child: PhotoView(
               imageProvider: CachedNetworkImageProvider(url),
             ),
@@ -254,6 +287,8 @@ class MessageTile extends StatelessWidget {
                                       showPhotoInDialog(context, image.url));
                             },
                             child: CachedNetworkImage(
+                                placeholder: (context, url) =>
+                                    const CircularProgressIndicator(),
                                 cacheManager: kIsWeb ? null : context.read(),
                                 imageUrl: image.url),
                           ),
