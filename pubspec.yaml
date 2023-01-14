@@ -47,6 +47,7 @@ dependencies:
   firebase_storage: ^11.0.10
   cross_file: ^0.3.3+2
   image_picker: ^0.8.6
+  photo_view: ^0.14.0
 
 dev_dependencies:
   flutter_test:

@@ -8,7 +8,8 @@ import 'package:pentellio/models/chat.dart';
 import 'package:pentellio/models/user.dart';
 
 class UserService {
-  UserService();
+  UserService() {
+  }
 
   final _users = FirebaseDatabase.instance.ref('users');
 

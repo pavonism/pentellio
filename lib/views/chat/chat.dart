@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +11,7 @@ import 'package:pentellio/views/chat_list/chat_list.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
 import 'package:pentellio/widgets/date_time_extensions.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
+import 'package:photo_view/photo_view.dart';
 
 import '../page_navigator.dart';
 import 'package:pentellio/models/chat.dart';
@@ -188,6 +191,20 @@ class MessageTile extends StatelessWidget {
   Message message;
   String? sender;
 
+  Widget showPhotoInDialog(BuildContext context, String url) {
+    return LayoutBuilder(builder: (context, constraints) {
+      return AlertDialog(
+          backgroundColor: Colors.transparent,
+          content: SizedBox(
+            width: constraints.maxWidth * 0.9,
+            height: constraints.maxHeight * 0.9,
+            child: PhotoView(
+              imageProvider: CachedNetworkImageProvider(url),
+            ),
+          ));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var radius = const Radius.circular(20);
@@ -227,7 +244,20 @@ class MessageTile extends StatelessWidget {
                       ),
                     if (message.images.isNotEmpty)
                       for (var image in message.images)
-                        if (image.content != null) image.content!,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: InkWell(
+                            onTap: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      showPhotoInDialog(context, image.url));
+                            },
+                            child: CachedNetworkImage(
+                                cacheManager: kIsWeb ? null : context.read(),
+                                imageUrl: image.url),
+                          ),
+                        ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

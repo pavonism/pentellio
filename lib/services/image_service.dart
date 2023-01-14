@@ -5,15 +5,31 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pentellio/models/chat.dart';
 import 'package:pentellio/models/message.dart';
+import 'package:file/file.dart';
+import 'package:file/local.dart';
+import 'package:flutter_cache_manager/src/storage/file_system/file_system.dart'
+    as c;
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
-class StorageService {
-  StorageService({required this.firebaseStorage});
+class StorageService extends CacheManager with ImageCacheManager {
   final FirebaseStorage firebaseStorage;
 
-  Future uploadChatImage(String chatId, String imgId, XFile img) async {
+  static const String key = "customCache";
+
+  StorageService({required this.firebaseStorage})
+      : super(
+          Config(key, fileSystem: IOFileSystem(key)),
+        );
+
+  Future<UrlImage> uploadChatImage(
+      String chatId, String imgId, XFile img) async {
     var ref = firebaseStorage.ref('chats/$chatId/$imgId');
     var data = await img.readAsBytes();
     await ref.putData(data);
+    var url = await ref.getDownloadURL();
+    return UrlImage(id: imgId, url: url);
   }
 
   Future<String> getChatImageUrl(String name) {
@@ -21,19 +37,39 @@ class StorageService {
     return ref.getDownloadURL();
   }
 
-  Future<Uint8List?> downloadChatImage(String chatId, String imgId) async {
+  Future<String> downloadChatImage(String chatId, String imgId) async {
     var ref = firebaseStorage.ref('chats/$chatId/$imgId');
-    return ref.getData();
+    return ref.getDownloadURL();
   }
 
   Future loadImagesForChat(Chat chat) async {
     for (var msg in chat.messages) {
       for (var img in msg.images) {
-        var imageBytes = await downloadChatImage(chat.chatId, img.id);
-        if (imageBytes != null) {
-          img.content = Image.memory(imageBytes);
-        }
+        img.url = await downloadChatImage(chat.chatId, img.id);
       }
     }
+  }
+}
+
+class IOFileSystem implements c.FileSystem {
+  final Future<Directory>? _fileDir;
+
+  IOFileSystem(String key) : _fileDir = !kIsWeb ? createDirectory(key) : null;
+
+  static Future<Directory> createDirectory(String key) async {
+    // use documents directory instead of temp
+    var baseDir = await getApplicationDocumentsDirectory();
+    var path = p.join(baseDir.path, key);
+
+    var fs = const LocalFileSystem();
+    var directory = fs.directory((path));
+    await directory.create(recursive: true);
+    return directory;
+  }
+
+  @override
+  Future<File> createFile(String name) async {
+    assert(_fileDir != null);
+    return (await _fileDir)!.childFile(name);
   }
 }

@@ -11,16 +11,13 @@ class Message {
   String content;
   String sentBy;
   DateTime sentTime;
-  List<ImageMessageContent> images;
+  List<UrlImage> images;
 
   Map toJson() => {
         'content': content,
         'sentBy': sentBy,
         'sentTime': sentTime.toString(),
-        'images': Map.fromIterable(
-          images.map((e) => e.id),
-          value: (element) => "",
-        ),
+        'images': {for (var e in images) e.id: e.url},
       };
 
   static List<Message> listFromJson(Map json) {
@@ -36,12 +33,12 @@ class Message {
   }
 
   static Message fromJson(Map json) {
-    List<ImageMessageContent> images = [];
+    List<UrlImage> images = [];
 
     if (json.containsKey('images')) {
       var imageMap = json['images'] as Map;
       imageMap.forEach((key, value) {
-        images.add(ImageMessageContent(id: key));
+        images.add(UrlImage(id: key, url: value));
       });
     }
 
@@ -53,8 +50,8 @@ class Message {
   }
 }
 
-class ImageMessageContent {
-  ImageMessageContent({required this.id, this.content});
+class UrlImage {
+  UrlImage({required this.id, this.url = ""});
   String id;
-  Image? content;
+  String url;
 }

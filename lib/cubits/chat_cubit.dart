@@ -60,32 +60,23 @@ class ChatCubit extends Cubit<EmptyState> {
     emit(SearchingUsersState(currentUser: currentUser));
   }
 
-  void OpenChat(Friend friend) {
+  void openChat(Friend friend) {
     closeChat();
 
     openedChat = friend;
-    chatService.GetChatUpdates(
-      friend.chat,
-      (msg) {
-        if (friend.chat.messages
-            .where((element) => element.id == msg.id)
-            .isEmpty) {
-          friend.chat.messages.add(msg);
-          emit(ChatOpenedState(
-              openedChat: openedChat!, currentUser: currentUser));
-        }
-      },
-    );
     emit(ChatOpenedState(openedChat: friend, currentUser: currentUser));
   }
 
-  void NewChatWith(PentellioUser user) {}
+  void _messageReceived(Message newMessage, Friend friend) {
+    friend.chat.messages.add(newMessage);
+    emit(ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
+  }
 
   void _AssignUser(String userId) async {
     currentUser = await userService.GetUser(userId);
     await _loadFriends(currentUser.friends);
     await _loadChats(currentUser.friends);
-    // chatService.ListenChats(currentUser.friends);
+    _listenChats(currentUser.friends);
     emit(UserState(currentUser: currentUser));
   }
 
@@ -113,7 +104,7 @@ class ChatCubit extends Cubit<EmptyState> {
       await chatService.loadChatForFriend(friend);
     }
 
-    OpenChat(friend);
+    openChat(friend);
   }
 
   Future _loadFriends(List<Friend> friends) async {
@@ -124,7 +115,7 @@ class ChatCubit extends Cubit<EmptyState> {
 
   Future _loadChat(Friend friend) async {
     await chatService.loadChatForFriend(friend);
-    await storageService.loadImagesForChat(friend.chat);
+    storageService.loadImagesForChat(friend.chat);
   }
 
   Future _loadChats(List<Friend> friends) async {
@@ -158,20 +149,14 @@ class ChatCubit extends Cubit<EmptyState> {
     if (openedChat != null) {
       try {
         String msgId = chatService.createMessageEntry(openedChat!.chatId);
-        int imageCounter = 0;
-        var imageMessages = images
-            .map((e) => ImageMessageContent(
-                  id: "${msgId}_$imageCounter",
-                ))
-            .toList();
 
-        List<Future> futures = [];
-        for (int i = 0; i < imageMessages.length; i++) {
+        List<Future<UrlImage>> futures = [];
+        for (int i = 0; i < images.length; i++) {
           futures.add(storageService.uploadChatImage(
-              openedChat!.chatId, imageMessages[i].id, images[i]));
+              openedChat!.chatId, "${msgId}_$i", images[i]));
         }
 
-        Future.wait(futures);
+        var urls = await Future.wait(futures);
 
         chatService.sendMessage(
             openedChat!.chatId,
@@ -179,11 +164,9 @@ class ChatCubit extends Cubit<EmptyState> {
               content: msg,
               sentBy: currentUser.userId,
               sentTime: DateTime.now(),
-              images: imageMessages,
+              images: urls,
             ),
             msgId: msgId);
-        emit(
-            ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
       } catch (e) {
         log(e.toString(), time: DateTime.now());
       }
@@ -192,7 +175,6 @@ class ChatCubit extends Cubit<EmptyState> {
 
   void closeChat() {
     if (openedChat != null) {
-      chatService.CloseChatUpdates();
       lastOpenedChat = openedChat;
       openedChat = null;
     }
@@ -201,13 +183,13 @@ class ChatCubit extends Cubit<EmptyState> {
 
   void openLastOpenedChat() {
     if (lastOpenedChat != null) {
-      OpenChat(lastOpenedChat!);
+      openChat(lastOpenedChat!);
     }
   }
 
   void openDrawStream() {
     if (openedChat != null) {
-      chatService.ListenSketches(openedChat!.chat, (sketch) {
+      chatService.listenSketches(openedChat!.chat, (sketch) {
         openedChat!.chat.sketches.add(sketch);
         emit(DrawingChatState(
             openedChat: openedChat!, currentUser: currentUser));
@@ -228,5 +210,12 @@ class ChatCubit extends Cubit<EmptyState> {
     chatService.clearSketches(openedChat!.chat);
     openedChat!.chat.sketches = [];
     emit(DrawingChatState(openedChat: openedChat!, currentUser: currentUser));
+  }
+
+  void _listenChats(List<Friend> friends) {
+    for (var friend in friends) {
+      chatService.listenChat(
+          friend.chat, (msg) => _messageReceived(msg, friend));
+    }
   }
 }

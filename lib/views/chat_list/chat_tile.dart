@@ -13,7 +13,7 @@ class ChatTile extends StatelessWidget {
   final Friend friend;
 
   void goToChat(BuildContext context) {
-    context.read<ChatCubit>().OpenChat(friend);
+    context.read<ChatCubit>().openChat(friend);
   }
 
   @override

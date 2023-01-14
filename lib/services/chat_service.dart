@@ -59,10 +59,14 @@ class ChatService {
     return Chat(messages: [], userIdToUsername: {});
   }
 
-  void GetChatUpdates(Chat chat, Function(Message) onNewMessages) {
+  void listenChat(Chat chat, Function(Message) onNewMessages) {
     var chatId = chat.chatId;
-    subscription =
-        _chats.child("$chatId/messages").onChildAdded.listen((event) {
+    log("new subscription on${chat.chatId}");
+    subscription = _chats
+        .child("$chatId/messages")
+        .orderByChild('sentTime')
+        .onChildAdded
+        .listen((event) {
       if (event.snapshot.value != null) {
         try {
           var msgs = Message.fromJson(event.snapshot.value as Map);
@@ -74,24 +78,11 @@ class ChatService {
     });
   }
 
-  void ListenChats(List<Friend> friends) {
-    friends.forEach((element) {
-      _chats
-          .child(element.chatId)
-          .orderByChild('sentTime')
-          .limitToLast(100)
-          .onChildChanged
-          .listen((event) {
-        var test = event.snapshot.value;
-      });
-    });
+  void closeChatUpdates() async {
+    await subscription?.cancel();
   }
 
-  void CloseChatUpdates() {
-    subscription?.cancel();
-  }
-
-  void ListenSketches(Chat chat, Function(Sketch) onNewSketch) {
+  void listenSketches(Chat chat, Function(Sketch) onNewSketch) {
     _chats.child(chat.chatId).child('sketches').onChildAdded.listen((event) {
       if (event.snapshot.value != null) {
         try {
@@ -116,5 +107,6 @@ class ChatService {
   Future loadChatForFriend(Friend friend) async {
     friend.chat = await GetChat(friend.chatId);
     friend.chat.chatId = friend.chatId;
+    friend.chat.messages = [];
   }
 }
