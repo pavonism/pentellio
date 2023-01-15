@@ -8,6 +8,7 @@ import 'package:pentellio/cubits/chat_cubit.dart';
 import 'package:pentellio/models/chat.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/services/chat_service.dart';
+import 'package:pentellio/widgets/rounded_rect.dart';
 
 class UserTile extends StatelessWidget {
   UserTile({super.key, required this.pentellioUser});
@@ -32,9 +33,8 @@ class UserTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: Row(
               children: [
-                ClipRRect(
-                  borderRadius:
-                      const BorderRadius.all(Radius.circular(50 * 0.4)),
+                RoundedRect(
+                  50,
                   child: pentellioUser.profilePictureUrl.isNotEmpty
                       ? CachedNetworkImage(
                           cacheManager: kIsWeb ? null : context.read(),
@@ -42,11 +42,7 @@ class UserTile extends StatelessWidget {
                               const CircularProgressIndicator(),
                           imageUrl: pentellioUser.profilePictureUrl,
                         )
-                      : const SizedBox(
-                          width: 54,
-                          height: 54,
-                          child: ColoredBox(color: Colors.blue),
-                        ),
+                      : ColoredBox(color: Theme.of(context).indicatorColor),
                 ),
                 Expanded(
                   child: Padding(

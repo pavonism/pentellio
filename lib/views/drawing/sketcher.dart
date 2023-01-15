@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubits/chat_cubit.dart';
@@ -14,11 +15,17 @@ class Sketcher extends StatefulWidget {
       {required this.color,
       required this.chatCubit,
       this.sketches = const [],
+      this.compression = 0.25,
+      this.weight = 2,
+      this.readOnly = false,
       super.key});
 
   Color color;
   ChatCubit chatCubit;
   var sketches = <Sketch>[];
+  double compression;
+  double weight;
+  bool readOnly;
 
   @override
   _SketcherState createState() => _SketcherState();
@@ -44,7 +51,8 @@ class _SketcherState extends State<Sketcher> {
     final box = context.findRenderObject() as RenderBox;
     final point = box.globalToLocal(details.globalPosition);
 
-    sketches.add(Sketch(List.generate(1, (index) => point), widget.color, 2.0));
+    sketches.add(Sketch(
+        List.generate(1, (index) => point), widget.color, widget.weight));
 
     lineStreamControler.add(sketches.last);
   }
@@ -72,31 +80,36 @@ class _SketcherState extends State<Sketcher> {
   void panEnd(DragEndDetails details) {
     var sketch = sketches.last;
     List<Offset> newPoints = [sketch.path.first];
+    int step = widget.compression == 0
+        ? 1
+        : (sketches.length / ((1 - widget.compression) * sketches.length))
+            .ceil();
 
-    for (int i = 1; i < sketch.path.length; i++) {
+    for (int i = 1; i < sketch.path.length - 1; i++) {
       var diff = sketch.path[i] - newPoints.last;
-      if (i % 3 == 0 && diff.dy.abs() > 2 && diff.dx.abs() > 2) {
+      if (diff.dy.abs() < 2 && diff.dx.abs() < 2) continue;
+
+      if (i % step == 0) {
         newPoints.add(sketch.path[i]);
       }
     }
 
+    newPoints.add(sketch.path.last);
     sketch.path = newPoints;
     widget.chatCubit.sendSketch(sketches.last);
+    sketches.remove(sketch);
   }
 
   void updateSketchStream() {
-    sketchStreamControler.add(widget.sketches);
     sketches = widget.sketches;
 
     if (sketches.isEmpty) {
-      sketches.add(
-          Sketch(List.generate(1, (index) => Offset.zero), Colors.white, 2.0));
+      sketches.add(Sketch(List.generate(1, (index) => Offset.zero),
+          Colors.white, widget.weight));
     }
   }
 
   Widget buildSketch(BuildContext context) {
-    updateSketchStream();
-
     return RepaintBoundary(
       child: Container(
           key: _globalKey,
@@ -141,7 +154,10 @@ class _SketcherState extends State<Sketcher> {
 
     return Scaffold(
         body: Stack(
-      children: [buildSketch(context), buildLine(context)],
+      children: [
+        buildSketch(context),
+        if (!widget.readOnly) buildLine(context)
+      ],
     ));
   }
 }

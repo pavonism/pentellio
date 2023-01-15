@@ -13,7 +13,7 @@ class PentellioText extends StatefulWidget {
     this.onFinished,
     this.align = TextAlign.center,
     this.animate = true,
-    this.duration = const Duration(milliseconds: 60),
+    this.duration = const Duration(milliseconds: 100),
   }) : super(key: key);
 
   final double fontSize;

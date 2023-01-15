@@ -64,7 +64,6 @@ class ChatTile extends StatelessWidget {
                               friend.user.username,
                               textAlign: TextAlign.left,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.white),
                             ),
                           ),
                           Flexible(
@@ -73,8 +72,7 @@ class ChatTile extends StatelessWidget {
                                   ? friend.chat.messages.last.sentTime.time()
                                   : "",
                               textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                  fontSize: 11, color: Colors.white),
+                              style: const TextStyle(fontSize: 11),
                             ),
                           ),
                         ],

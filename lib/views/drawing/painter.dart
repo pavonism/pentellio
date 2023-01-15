@@ -4,7 +4,7 @@ import '../../models/sketch.dart';
 
 class Brush extends CustomPainter {
   var sketches = <Sketch>[];
-
+  int lastSize = 0;
   Brush({required this.sketches});
 
   @override
@@ -25,6 +25,8 @@ class Brush extends CustomPainter {
 
   @override
   bool shouldRepaint(Brush oldDelegate) {
-    return true;
+    var res = lastSize != oldDelegate.sketches.length;
+    lastSize = oldDelegate.sketches.length;
+    return res;
   }
 }

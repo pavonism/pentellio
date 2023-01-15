@@ -113,7 +113,7 @@ class _ChatViewState extends State<ChatView> {
                       onPressed: () {
                         context.read<ChatCubit>().openDrawStream();
                       },
-                      icon: const Icon(Icons.draw)),
+                      icon: const Icon(Icons.draw_rounded)),
                 ),
               ),
             ],
@@ -171,7 +171,8 @@ class _ChatViewState extends State<ChatView> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   child: Row(
                     children: [
                       if (!kIsWeb)
@@ -194,7 +195,7 @@ class _ChatViewState extends State<ChatView> {
                             messageController.clear();
                           },
                           icon: const Icon(Icons.photo)),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: TextFormField(
                           textInputAction: TextInputAction.none,
@@ -232,7 +233,7 @@ class _ChatViewState extends State<ChatView> {
 }
 
 class MessageTile extends StatelessWidget {
-  MessageTile(
+  const MessageTile(
     this.width, {
     required this.sender,
     super.key,
@@ -243,11 +244,11 @@ class MessageTile extends StatelessWidget {
   });
 
   final double width;
-  Message message;
-  PentellioUser sender;
-  PentellioUser currentUser;
-  bool sameSender;
-  bool firstMessage;
+  final Message message;
+  final PentellioUser sender;
+  final PentellioUser currentUser;
+  final bool sameSender;
+  final bool firstMessage;
 
   Widget showPhotoInDialog(BuildContext context, String url) {
     return LayoutBuilder(builder: (context, constraints) {

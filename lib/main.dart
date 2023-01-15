@@ -94,7 +94,7 @@ class PentellioApp extends StatelessWidget {
                             return BlocBuilder<AppSettingsCubit, SettingsState>(
                                 builder: (context, state) {
                               return Theme(
-                                  data: state.theme!, child: const LoginGate());
+                                  data: state.theme, child: const LoginGate());
                             });
                           }
                         })),

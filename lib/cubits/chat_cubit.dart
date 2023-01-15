@@ -208,6 +208,7 @@ class ChatCubit extends Cubit<EmptyState> {
   }
 
   void closeDrawStream() {
+    chatService.closeSketchSubscription(openedChat!.chat);
     emit(ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
   }
 
@@ -215,7 +216,7 @@ class ChatCubit extends Cubit<EmptyState> {
     chatService.addSketch(openedChat!.chat, sketch);
   }
 
-  void clearSketches() {
+  Future clearSketches() async {
     chatService.clearSketches(openedChat!.chat);
     openedChat!.chat.sketches = [];
     emit(DrawingChatState(openedChat: openedChat!, currentUser: currentUser));

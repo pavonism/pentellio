@@ -13,6 +13,7 @@ class ChatService {
   ChatService();
   final _chats = FirebaseDatabase.instance.ref("chats");
   StreamSubscription<DatabaseEvent>? subscription;
+  StreamSubscription<DatabaseEvent>? _sketchSubscription;
 
   String createMessageEntry(String chatId) {
     var ref = _chats.child("$chatId/messages");
@@ -83,7 +84,11 @@ class ChatService {
   }
 
   void listenSketches(Chat chat, Function(Sketch) onNewSketch) {
-    _chats.child(chat.chatId).child('sketches').onChildAdded.listen((event) {
+    _sketchSubscription = _chats
+        .child(chat.chatId)
+        .child('sketches')
+        .onChildAdded
+        .listen((event) {
       if (event.snapshot.value != null) {
         try {
           var sketch = Sketch.fromJson(event.snapshot.value as Map);
@@ -93,6 +98,10 @@ class ChatService {
         }
       }
     });
+  }
+
+  void closeSketchSubscription(Chat chat) async {
+    await _sketchSubscription?.cancel();
   }
 
   void addSketch(Chat chat, Sketch sketch) async {

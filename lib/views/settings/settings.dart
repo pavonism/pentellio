@@ -32,11 +32,9 @@ class _SettingsViewState extends State<SettingsView> {
   bool _imageHover = false;
   final ImagePicker _imagePicker = ImagePicker();
   bool initialized = false;
+  double _compressionRatio = 0.25;
 
   Widget _buildProfilePicture(BuildContext context, double profilePictureSize) {
-    if (!initialized) {
-      _darkTheme = context.read<AppSettingsCubit>().darkTheme;
-    }
     var chatCubit = context.read<ChatCubit>();
     initialized = true;
     return ClipRRect(
@@ -100,6 +98,7 @@ class _SettingsViewState extends State<SettingsView> {
               children: const [Text("Dark theme")],
             ),
             Switch(
+              activeColor: Theme.of(context).indicatorColor,
               onChanged: (value) => {
                 setState(() {
                   _darkTheme = value;
@@ -140,6 +139,42 @@ class _SettingsViewState extends State<SettingsView> {
     );
   }
 
+  Widget _buildCompression(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text("Sketches compression"),
+            Slider(
+              activeColor: Theme.of(context).indicatorColor,
+              onChanged: (value) async {
+                setState(() {
+                  _compressionRatio = value;
+                });
+                await context
+                    .read<AppSettingsCubit>()
+                    .setSketchesCompression(_compressionRatio);
+              },
+              value: _compressionRatio,
+              min: 0,
+              max: 0.95,
+            ),
+            Text("${(_compressionRatio * 100).toStringAsFixed(1)} %"),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSettingsList(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       var profilePictureSize = min<double>(200, constraints.maxWidth);
@@ -159,6 +194,7 @@ class _SettingsViewState extends State<SettingsView> {
                 const SizedBox(
                   height: 16,
                 ),
+                _buildCompression(context),
                 _buildThemeSwitch(context),
                 _buildLogOut(context),
                 const Expanded(
@@ -169,7 +205,6 @@ class _SettingsViewState extends State<SettingsView> {
                   child: widget.preview
                       ? const Text("")
                       : PentellioText(
-                          duration: const Duration(milliseconds: 80),
                           fontSize: 50,
                           text: "Pentellio",
                         ),
@@ -184,6 +219,12 @@ class _SettingsViewState extends State<SettingsView> {
 
   @override
   Widget build(BuildContext context) {
+    if (!initialized) {
+      _darkTheme = context.read<AppSettingsCubit>().darkTheme;
+      _compressionRatio =
+          context.read<AppSettingsCubit>().getCompressionRatio();
+    }
+
     return PageNavigator(
       duration: const Duration(milliseconds: 200),
       nextPage: ChatPanelPortrait(user: widget.user),

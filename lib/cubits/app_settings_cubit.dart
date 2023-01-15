@@ -71,4 +71,12 @@ class AppSettingsCubit extends Cubit<SettingsState> {
     _preferences.setBool('dark_theme', darkTheme);
     emit(SettingsState(theme: currentTheme));
   }
+
+  Future setSketchesCompression(double compressionRatio) async {
+    await _preferences.setDouble('skecthes_compression', compressionRatio);
+  }
+
+  double getCompressionRatio() {
+    return _preferences.getDouble('skecthes_compression') ?? 0.25;
+  }
 }
