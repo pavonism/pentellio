@@ -12,14 +12,13 @@ class RoundedRect extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-          color: Colors.blue.withOpacity(1.0),
-          border: Border.all(color: borderColor ?? Colors.black, width: 1),
-          borderRadius: BorderRadius.all(Radius.circular(size * 0.4))),
-      width: size,
-      height: size,
-      child: child,
+    return ClipRRect(
+      borderRadius: BorderRadius.all(Radius.circular(size * 0.2)),
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: child,
+      ),
     );
   }
 }

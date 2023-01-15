@@ -34,18 +34,20 @@ class ChatTile extends StatelessWidget {
             child: Row(children: [
               ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(50 * 0.4)),
-                child: friend.user.profilePictureUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        cacheManager: kIsWeb ? null : context.read(),
-                        placeholder: (context, url) =>
-                            const CircularProgressIndicator(),
-                        imageUrl: friend.user.profilePictureUrl,
-                      )
-                    : const SizedBox(
-                        width: 54,
-                        height: 54,
-                        child: ColoredBox(color: Colors.blue),
-                      ),
+                child: SizedBox(
+                  width: 54,
+                  height: 54,
+                  child: friend.user.profilePictureUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          cacheManager: kIsWeb ? null : context.read(),
+                          placeholder: (context, url) =>
+                              const CircularProgressIndicator(),
+                          imageUrl: friend.user.profilePictureUrl,
+                        )
+                      : const ColoredBox(
+                          color: Colors.blue,
+                        ),
+                ),
               ),
               const SizedBox(
                 width: 6,

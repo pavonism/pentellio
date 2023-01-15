@@ -40,57 +40,57 @@ class _ChatPanelPortraitState extends State<ChatPanelPortrait> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: PageNavigator(
-        duration: const Duration(milliseconds: 200),
-        nextPage: context.read<ChatCubit>().lastOpenedChat != null
-            ? ChatView(
-                friend: context.read<ChatCubit>().lastOpenedChat!,
-                user: widget.user)
-            : null,
-        onNextPage: context.read<ChatCubit>().openLastOpenedChat,
-        previousPage: SettingsView(user: widget.user),
-        onPreviousPage: context.read<ChatCubit>().viewSettings,
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Theme.of(context).backgroundColor,
-            automaticallyImplyLeading: false,
-            titleSpacing: 0,
-            title: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-              const SizedBox(
-                width: 4,
-              ),
-              IconButton(
-                  onPressed: () {
-                    context.read<ChatCubit>().viewSettings();
-                  },
-                  icon: const Icon(Icons.menu)),
-              const SizedBox(
-                width: 4,
-              ),
-              Expanded(
-                  child: Align(
-                alignment: Alignment.centerLeft,
-                child: PentellioText(
-                  fontSize:
-                      Theme.of(context).appBarTheme.titleTextStyle?.fontSize ??
-                          40,
-                  text: "Pentellio",
-                  animate: false,
-                ),
-              )),
-              IconButton(
+    return PageNavigator(
+      duration: const Duration(milliseconds: 200),
+      nextPage: context.read<ChatCubit>().lastOpenedChat != null
+          ? ChatView(
+              friend: context.read<ChatCubit>().lastOpenedChat!,
+              user: widget.user)
+          : null,
+      onNextPage: context.read<ChatCubit>().openLastOpenedChat,
+      previousPage: SettingsView(
+        user: widget.user,
+        preview: true,
+      ),
+      onPreviousPage: context.read<ChatCubit>().viewSettings,
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          titleSpacing: 0,
+          title: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+            const SizedBox(
+              width: 4,
+            ),
+            IconButton(
                 onPressed: () {
-                  context.read<ChatCubit>().StartSearchingUsers();
+                  context.read<ChatCubit>().viewSettings();
                 },
-                icon: const Icon(Icons.search),
-                splashRadius: 25,
+                icon: const Icon(Icons.menu)),
+            const SizedBox(
+              width: 4,
+            ),
+            Expanded(
+                child: Align(
+              alignment: Alignment.centerLeft,
+              child: PentellioText(
+                fontSize:
+                    Theme.of(context).appBarTheme.titleTextStyle?.fontSize ??
+                        40,
+                text: "Pentellio",
+                animate: false,
               ),
-            ]),
-          ),
-          body: ChatList(
-            user: widget.user,
-          ),
+            )),
+            IconButton(
+              onPressed: () {
+                context.read<ChatCubit>().StartSearchingUsers();
+              },
+              icon: const Icon(Icons.search),
+              splashRadius: 25,
+            ),
+          ]),
+        ),
+        body: ChatList(
+          user: widget.user,
         ),
       ),
     );

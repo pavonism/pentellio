@@ -43,78 +43,79 @@ class _ChatViewState extends State<ChatView> {
             .firstWhere((element) => element.key != widget.user.userId)
             .value;
 
-    return SafeArea(
-      child: PageNavigator(
-        onPreviousPage: () => context.read<ChatCubit>().closeChat(),
-        previousPage: ChatPanelPortrait(
-          user: widget.user,
-        ),
-        duration: Duration(milliseconds: 200),
-        nextPage: DrawView(
-          user: widget.user,
-          friend: widget.friend,
-        ),
-        onNextPage: context.read<ChatCubit>().openDrawStream,
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Theme.of(context).backgroundColor,
-            titleTextStyle: TextStyle(
-                fontSize: Theme.of(context).textTheme.labelLarge?.fontSize,
-                color: Theme.of(context).textTheme.labelLarge?.color),
-            automaticallyImplyLeading: false,
-            titleSpacing: 0,
-            title: Row(
-              children: [
-                IconButton(
-                  iconSize: 20,
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => context.read<ChatCubit>().closeChat(),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 5),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.all(Radius.circular(40 * 0.2)),
-                    child: SizedBox(
-                      width: 40,
-                      height: 40,
-                      child: widget.friend.user.profilePictureUrl.isNotEmpty
-                          ? CachedNetworkImage(
-                              cacheManager: kIsWeb ? null : context.read(),
-                              placeholder: (context, url) =>
-                                  const CircularProgressIndicator(),
-                              imageUrl: widget.friend.user.profilePictureUrl,
-                            )
-                          : ColoredBox(color: Colors.blue),
-                    ),
+    return PageNavigator(
+      onPreviousPage: () => context.read<ChatCubit>().closeChat(),
+      previousPage: ChatPanelPortrait(
+        user: widget.user,
+      ),
+      duration: const Duration(milliseconds: 200),
+      nextPage: DrawView(
+        user: widget.user,
+        friend: widget.friend,
+      ),
+      onNextPage: context.read<ChatCubit>().openDrawStream,
+      child: Scaffold(
+        appBar: AppBar(
+          titleTextStyle: TextStyle(
+              fontSize: Theme.of(context).textTheme.labelLarge?.fontSize,
+              color: Theme.of(context).textTheme.labelLarge?.color),
+          automaticallyImplyLeading: false,
+          titleSpacing: 0,
+          title: Row(
+            children: [
+              IconButton(
+                iconSize: 20,
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => context.read<ChatCubit>().closeChat(),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                child: ClipRRect(
+                  borderRadius:
+                      const BorderRadius.all(Radius.circular(40 * 0.2)),
+                  child: SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: widget.friend.user.profilePictureUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            cacheManager: kIsWeb ? null : context.read(),
+                            placeholder: (context, url) =>
+                                const CircularProgressIndicator(),
+                            imageUrl: widget.friend.user.profilePictureUrl,
+                          )
+                        : const ColoredBox(color: Colors.blue),
                   ),
                 ),
-                SizedBox(
-                  width: 4,
+              ),
+              const SizedBox(
+                width: 4,
+              ),
+              Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title),
+                    Text(widget.friend.user.lastSeen == null
+                        ? 'Active'
+                        : 'Last seen ${widget.friend.user.lastSeen!.timeAgo()}'),
+                  ]),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                      onPressed: () {
+                        context.read<ChatCubit>().openDrawStream();
+                      },
+                      icon: const Icon(Icons.draw)),
                 ),
-                Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title),
-                      Text(widget.friend.user.lastSeen == null
-                          ? 'Active'
-                          : 'Last seen ${widget.friend.user.lastSeen!.timeAgo()}'),
-                    ]),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                        onPressed: () {
-                          context.read<ChatCubit>().openDrawStream();
-                        },
-                        icon: const Icon(Icons.draw)),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          body: Container(
-            color: Color(0xFF191C1F),
+        ),
+        body: Container(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Column(
               children: [
                 Expanded(
@@ -130,24 +131,26 @@ class _ChatViewState extends State<ChatView> {
                       child: LayoutBuilder(
                         builder: (context, constraints) {
                           return ListView.builder(
+                            key: PageStorageKey<String>(widget.friend.chatId),
                             reverse: true,
                             itemCount: widget.friend.chat.messages.length,
                             itemBuilder: (context, index) {
-                              var currentUser =
-                                  context.read<ChatCubit>().currentUser.userId;
                               var msg = widget.friend.chat.messages[
                                   widget.friend.chat.messages.length -
                                       index -
                                       1];
+                              var sender = widget.friend.uId == msg.sentBy
+                                  ? widget.friend.user
+                                  : widget.user;
+
                               return MessageTile(
-                                  msg.sentBy == currentUser
-                                      ? null
-                                      : widget.friend.chat
-                                          .userIdToUsername[msg.sentBy],
-                                  constraints.maxWidth * 0.6 < 300
-                                      ? constraints.maxWidth
-                                      : 300 + constraints.maxWidth * 0.3,
-                                  message: msg);
+                                sender: sender,
+                                constraints.maxWidth * 0.6 < 300
+                                    ? constraints.maxWidth
+                                    : 300 + constraints.maxWidth * 0.3,
+                                message: msg,
+                                currentUser: widget.user,
+                              );
                             },
                           );
                         },
@@ -199,7 +202,6 @@ class _ChatViewState extends State<ChatView> {
                             sendMessage(context);
                           },
                           splashRadius: 25,
-                          color: Colors.white,
                           icon: const Icon(
                             Icons.send,
                           ),
@@ -218,11 +220,16 @@ class _ChatViewState extends State<ChatView> {
 }
 
 class MessageTile extends StatelessWidget {
-  MessageTile(this.sender, this.width, {super.key, required this.message});
+  MessageTile(this.width,
+      {required this.sender,
+      super.key,
+      required this.message,
+      required this.currentUser});
 
   final double width;
   Message message;
-  String? sender;
+  PentellioUser sender;
+  PentellioUser currentUser;
 
   Widget showPhotoInDialog(BuildContext context, String url) {
     return LayoutBuilder(builder: (context, constraints) {
@@ -243,10 +250,12 @@ class MessageTile extends StatelessWidget {
     var radius = const Radius.circular(20);
 
     final List<Widget> singleMessage = <Widget>[
-      const RoundedRect(40),
-      const SizedBox(
-        width: 10,
-      ),
+      RoundedRect(40,
+          child: sender.profilePictureUrl.isNotEmpty
+              ? CachedNetworkImage(
+                  cacheManager: context.read(),
+                  imageUrl: sender.profilePictureUrl)
+              : const ColoredBox(color: Colors.blue)),
       Flexible(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: width),
@@ -256,7 +265,7 @@ class MessageTile extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Theme.of(context).backgroundColor,
                 border: Border.all(color: Colors.black, width: 1),
-                borderRadius: sender != null
+                borderRadius: sender.userId != currentUser.userId
                     ? BorderRadius.only(
                         bottomRight: radius, topLeft: radius, topRight: radius)
                     : BorderRadius.only(
@@ -265,13 +274,13 @@ class MessageTile extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
-                  crossAxisAlignment: sender != null
+                  crossAxisAlignment: sender.userId != currentUser.userId
                       ? CrossAxisAlignment.start
                       : CrossAxisAlignment.end,
                   children: [
-                    if (sender != null)
+                    if (sender.userId != currentUser.userId)
                       Text(
-                        sender!,
+                        sender.username,
                         textAlign: TextAlign.right,
                         style: const TextStyle(color: Colors.lightBlueAccent),
                       ),
@@ -329,11 +338,13 @@ class MessageTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       child: Row(
-          mainAxisAlignment:
-              sender == null ? MainAxisAlignment.end : MainAxisAlignment.start,
+          mainAxisAlignment: sender.userId == currentUser.userId
+              ? MainAxisAlignment.end
+              : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.end,
-          children:
-              sender != null ? singleMessage : singleMessage.reversed.toList()),
+          children: sender.userId != currentUser.userId
+              ? singleMessage
+              : singleMessage.reversed.toList()),
     );
   }
 }

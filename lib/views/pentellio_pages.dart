@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/auth_cubit.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
 import 'package:pentellio/models/chat.dart';
+import 'package:pentellio/providers/nagivation_state.dart';
 import 'package:pentellio/services/chat_service.dart';
 import 'package:pentellio/services/image_service.dart';
 import 'package:pentellio/services/user_service.dart';
@@ -36,22 +37,25 @@ class PentellionPages extends StatelessWidget {
         child: Provider(
           create: (_) =>
               StorageService(firebaseStorage: FirebaseStorage.instance),
-          child: BlocProvider(
-            create: (context) {
-              return ChatCubit(
-                  chatService: context.read(),
-                  userService: context.read(),
-                  storageService: context.read(),
-                  userId: signedInState.uid);
-            },
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return constraints.maxWidth < 600
-                    ? PentellioPagesPortrait()
-                    : PentellioPagesLandscape(
-                        constraints: constraints,
-                      );
+          child: Provider(
+            create: (context) => NagivationState(false),
+            child: BlocProvider(
+              create: (context) {
+                return ChatCubit(
+                    chatService: context.read(),
+                    userService: context.read(),
+                    storageService: context.read(),
+                    userId: signedInState.uid);
               },
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return constraints.maxWidth < 600
+                      ? PentellioPagesPortrait()
+                      : PentellioPagesLandscape(
+                          constraints: constraints,
+                        );
+                },
+              ),
             ),
           ),
         ),

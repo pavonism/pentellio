@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pentellio/providers/nagivation_state.dart';
+import 'package:provider/provider.dart';
 
 class PageNavigator extends StatefulWidget {
   const PageNavigator(
@@ -47,6 +50,17 @@ class _PageNavigatorState extends State<PageNavigator>
 
   @override
   Widget build(BuildContext context) {
+    var navigationState = context.read<NagivationState>();
+
+    var pages = <Widget>[
+      if (widget.nextPage != null && !navigationState.lock)
+        Positioned.fill(child: widget.nextPage!),
+      if (widget.previousPage != null && !navigationState.lock)
+        Positioned.fill(child: widget.previousPage!),
+    ];
+
+    if (currentAnimation == leftLeave) pages = pages.reversed.toList();
+
     return LayoutBuilder(builder: (context, constraints) {
       return GestureDetector(
           onHorizontalDragStart: (details) {
@@ -87,21 +101,17 @@ class _PageNavigatorState extends State<PageNavigator>
               });
             }
           },
-          child: Stack(
-            children: [
-              if (widget.nextPage != null &&
-                  currentAnimation == leftLeave &&
-                  _controller.value != 0)
-                Positioned.fill(child: widget.nextPage!),
-              if (widget.previousPage != null &&
-                  currentAnimation == rightLeave &&
-                  _controller.value != 0)
-                Positioned.fill(child: widget.previousPage!),
-              Positioned.fill(
-                child: SlideTransition(
-                    position: currentAnimation, child: widget.child),
-              )
-            ],
+          child: Provider(
+            create: (context) => NagivationState(true),
+            child: Stack(
+              children: [
+                for (var page in pages) page,
+                Positioned.fill(
+                  child: SlideTransition(
+                      position: currentAnimation, child: widget.child),
+                ),
+              ],
+            ),
           ));
     });
   }

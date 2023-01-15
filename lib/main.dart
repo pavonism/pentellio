@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pentellio/cubits/app_settings_cubit.dart';
 import 'package:pentellio/services/chat_service.dart';
 import 'package:pentellio/services/user_service.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +18,7 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   if (!kIsWeb) {
     FirebaseDatabase.instance.setPersistenceEnabled(true);
@@ -70,37 +71,35 @@ class PentellioApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        fontFamily: "Segoe UI",
-        primarySwatch: Colors.grey,
-        primaryColor: Colors.white,
-        highlightColor: Colors.white,
-        shadowColor: Colors.grey,
-        errorColor: Colors.red,
-        colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: Colors.grey,
-            primaryColorDark: const Color(0xFF282E33),
-            accentColor: Colors.white,
-            backgroundColor: const Color(0xFF282E33),
-            cardColor: const Color(0x003D444B),
-            brightness: Brightness.dark),
-        backgroundColor: const Color(0xFF282E33),
-        scaffoldBackgroundColor: const Color(0xFF191C1F),
-      ),
       home: Provider(
-        create: (_) {
-          return AuthService(firebaseAuth: FirebaseAuth.instance);
-        },
-        child: Provider(
-          create: (_) {
-            return UserService();
-          },
-          child: BlocProvider(
-            create: (context) => AuthCubit(
-                authService: context.read(), userService: context.read()),
-            child: const LoginGate(),
-          ),
-        ),
+        create: (context) => AppSettingsCubit(),
+        builder: ((context, child) => Provider(
+              create: (_) {
+                return AuthService(firebaseAuth: FirebaseAuth.instance);
+              },
+              child: Provider(
+                create: (_) {
+                  return UserService();
+                },
+                child: BlocProvider(
+                    create: (context) => AuthCubit(
+                        authService: context.read(),
+                        userService: context.read()),
+                    child: FutureBuilder(
+                        future: context.read<AppSettingsCubit>().initialize(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const CircularProgressIndicator();
+                          } else {
+                            return BlocBuilder<AppSettingsCubit, SettingsState>(
+                                builder: (context, state) {
+                              return Theme(
+                                  data: state.theme!, child: const LoginGate());
+                            });
+                          }
+                        })),
+              ),
+            )),
       ),
     );
   }

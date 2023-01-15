@@ -6,30 +6,35 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/auth_cubit.dart';
 
 class PentellioText extends StatefulWidget {
-  const PentellioText(
-      {Key? key,
-      this.fontSize = 100,
-      this.text = "",
-      this.onFinished,
-      this.align = TextAlign.center,
-      this.animate = true})
-      : super(key: key);
+  PentellioText({
+    Key? key,
+    this.fontSize = 100,
+    this.text = "",
+    this.onFinished,
+    this.align = TextAlign.center,
+    this.animate = true,
+    this.duration = const Duration(milliseconds: 60),
+  }) : super(key: key);
 
   final double fontSize;
   final String text;
   final void Function()? onFinished;
   final TextAlign align;
   final bool animate;
+  final Duration duration;
+  int animationLaunched = 0;
 
   @override
   State<PentellioText> createState() => _PentellioTextState();
 }
 
 class _PentellioTextState extends State<PentellioText> {
-  bool animationLaunched = false;
-
   @override
   Widget build(BuildContext context) {
+    setState(() {
+      widget.animationLaunched++;
+    });
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -37,22 +42,26 @@ class _PentellioTextState extends State<PentellioText> {
             style: TextStyle(
               fontSize: widget.fontSize,
               fontFamily: 'FugglesPro-Regular',
-              color: Theme.of(context).primaryColor,
+              color: Theme.of(context).textTheme.caption?.color,
               fontFeatures: const [
                 FontFeature.randomize(),
               ],
             ),
             child:
                 // context.read<AuthCubit>().state is NeedsSigningInState ?
-                widget.animate
+                widget.animate && widget.animationLaunched < 2
                     ? AnimatedTextKit(
-                        onFinished: widget.onFinished,
+                        onFinished: () {
+                          if (widget.onFinished != null) {
+                            widget.onFinished!();
+                          }
+                        },
                         isRepeatingAnimation: false,
                         animatedTexts: [
                           TyperAnimatedText(
                             widget.text,
                             textAlign: widget.align,
-                            speed: const Duration(milliseconds: 60),
+                            speed: widget.duration,
                           )
                         ],
                       )

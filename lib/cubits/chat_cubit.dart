@@ -109,6 +109,8 @@ class ChatCubit extends Cubit<EmptyState> {
       currentUser.friends.add(friend);
       await userService.loadFriend(friend);
       await chatService.loadChatForFriend(friend);
+      chatService.listenChat(
+          friend.chat, (msg) => _messageReceived(msg, friend!));
     }
 
     openChat(friend);

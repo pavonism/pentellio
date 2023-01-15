@@ -8,6 +8,7 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pentellio/cubits/app_settings_cubit.dart';
 import 'package:pentellio/cubits/auth_cubit.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
 import 'package:pentellio/models/user.dart';
@@ -17,9 +18,10 @@ import 'package:pentellio/views/page_navigator.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
 
 class SettingsView extends StatefulWidget {
-  SettingsView({super.key, required this.user});
+  SettingsView({super.key, required this.user, this.preview = false});
 
   final PentellioUser user;
+  final bool preview;
 
   @override
   State<SettingsView> createState() => _SettingsViewState();
@@ -29,10 +31,14 @@ class _SettingsViewState extends State<SettingsView> {
   bool _darkTheme = true;
   bool _imageHover = false;
   final ImagePicker _imagePicker = ImagePicker();
+  bool initialized = false;
 
   Widget _buildProfilePicture(BuildContext context, double profilePictureSize) {
+    if (!initialized) {
+      _darkTheme = context.read<AppSettingsCubit>().darkTheme;
+    }
     var chatCubit = context.read<ChatCubit>();
-
+    initialized = true;
     return ClipRRect(
       borderRadius: BorderRadius.all(Radius.circular(profilePictureSize * 0.2)),
       child: InkWell(
@@ -52,18 +58,20 @@ class _SettingsViewState extends State<SettingsView> {
           child: Stack(
             children: [
               widget.user.profilePictureUrl.isNotEmpty
-                  ? CachedNetworkImage(
-                      cacheManager: kIsWeb ? null : context.read(),
-                      color: _imageHover ? Colors.grey.shade700 : null,
-                      colorBlendMode: BlendMode.overlay,
-                      placeholder: (context, url) => const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                      imageUrl: widget.user.profilePictureUrl)
+                  ? Center(
+                      child: CachedNetworkImage(
+                          cacheManager: kIsWeb ? null : context.read(),
+                          color: _imageHover ? Colors.grey.shade700 : null,
+                          colorBlendMode: BlendMode.overlay,
+                          placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                          imageUrl: widget.user.profilePictureUrl),
+                    )
                   : SizedBox(
                       width: profilePictureSize,
                       height: profilePictureSize,
-                      child: ColoredBox(color: Colors.blue),
+                      child: const ColoredBox(color: Colors.blue),
                     ),
               if (_imageHover)
                 Center(child: Icon(size: profilePictureSize * 0.3, Icons.image))
@@ -91,17 +99,14 @@ class _SettingsViewState extends State<SettingsView> {
             Column(
               children: const [Text("Dark theme")],
             ),
-            Column(
-              children: [
-                Switch(
-                  onChanged: (value) => {
-                    setState(() {
-                      _darkTheme = value;
-                    }),
-                  },
-                  value: _darkTheme,
-                ),
-              ],
+            Switch(
+              onChanged: (value) => {
+                setState(() {
+                  _darkTheme = value;
+                  context.read<AppSettingsCubit>().switchTheme(_darkTheme);
+                }),
+              },
+              value: _darkTheme,
             ),
           ],
         ),
@@ -126,10 +131,8 @@ class _SettingsViewState extends State<SettingsView> {
           padding: const EdgeInsets.symmetric(vertical: 24),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                children: [const Text("Log out")],
-              ),
+            children: const [
+              Text("Log out"),
             ],
           ),
         ),
@@ -161,12 +164,15 @@ class _SettingsViewState extends State<SettingsView> {
                 const Expanded(
                   child: SizedBox.expand(),
                 ),
-                const Align(
+                Align(
                   alignment: Alignment.bottomCenter,
-                  child: PentellioText(
-                    fontSize: 50,
-                    text: "Pentellio",
-                  ),
+                  child: widget.preview
+                      ? const Text("")
+                      : PentellioText(
+                          duration: const Duration(milliseconds: 80),
+                          fontSize: 50,
+                          text: "Pentellio",
+                        ),
                 ),
               ],
             ),
