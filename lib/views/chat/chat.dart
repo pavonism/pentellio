@@ -258,6 +258,8 @@ class MessageTile extends StatelessWidget {
             width: constraints.maxWidth,
             height: constraints.maxHeight,
             child: PhotoView(
+              backgroundDecoration:
+                  const BoxDecoration(color: Colors.transparent),
               imageProvider: CachedNetworkImageProvider(url),
             ),
           ));

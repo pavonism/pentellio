@@ -22,17 +22,18 @@ class PentellioText extends StatefulWidget {
   final TextAlign align;
   final bool animate;
   final Duration duration;
-  int animationLaunched = 0;
 
   @override
   State<PentellioText> createState() => _PentellioTextState();
 }
 
 class _PentellioTextState extends State<PentellioText> {
+  int animationLaunched = 0;
+
   @override
   Widget build(BuildContext context) {
     setState(() {
-      widget.animationLaunched++;
+      animationLaunched++;
     });
 
     return Center(
@@ -41,15 +42,16 @@ class _PentellioTextState extends State<PentellioText> {
         child: DefaultTextStyle(
             style: TextStyle(
               fontSize: widget.fontSize,
+              fontWeight: FontWeight.w500,
               fontFamily: 'FugglesPro-Regular',
-              color: Theme.of(context).textTheme.caption?.color,
+              color: Theme.of(context).textTheme.bodyText2?.color,
               fontFeatures: const [
                 FontFeature.randomize(),
               ],
             ),
             child:
                 // context.read<AuthCubit>().state is NeedsSigningInState ?
-                widget.animate && widget.animationLaunched < 2
+                widget.animate && animationLaunched < 2
                     ? AnimatedTextKit(
                         onFinished: () {
                           if (widget.onFinished != null) {

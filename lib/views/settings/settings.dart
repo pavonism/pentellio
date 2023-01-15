@@ -33,6 +33,7 @@ class _SettingsViewState extends State<SettingsView> {
   final ImagePicker _imagePicker = ImagePicker();
   bool initialized = false;
   double _compressionRatio = 0.25;
+  double _fontSize = 11;
 
   Widget _buildProfilePicture(BuildContext context, double profilePictureSize) {
     var chatCubit = context.read<ChatCubit>();
@@ -55,22 +56,21 @@ class _SettingsViewState extends State<SettingsView> {
           width: profilePictureSize,
           child: Stack(
             children: [
-              widget.user.profilePictureUrl.isNotEmpty
-                  ? Center(
-                      child: CachedNetworkImage(
-                          cacheManager: kIsWeb ? null : context.read(),
-                          color: _imageHover ? Colors.grey.shade700 : null,
-                          colorBlendMode: BlendMode.overlay,
-                          placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                          imageUrl: widget.user.profilePictureUrl),
-                    )
-                  : SizedBox(
-                      width: profilePictureSize,
-                      height: profilePictureSize,
-                      child: const ColoredBox(color: Colors.blue),
-                    ),
+              RoundedRect(
+                profilePictureSize,
+                child: widget.user.profilePictureUrl.isNotEmpty
+                    ? Center(
+                        child: CachedNetworkImage(
+                            cacheManager: kIsWeb ? null : context.read(),
+                            color: _imageHover ? Colors.grey.shade700 : null,
+                            colorBlendMode: BlendMode.overlay,
+                            placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                            imageUrl: widget.user.profilePictureUrl),
+                      )
+                    : const ColoredBox(color: Colors.blue),
+              ),
               if (_imageHover)
                 Center(child: Icon(size: profilePictureSize * 0.3, Icons.image))
             ],
@@ -94,18 +94,21 @@ class _SettingsViewState extends State<SettingsView> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              children: const [Text("Dark theme")],
-            ),
-            Switch(
-              activeColor: Theme.of(context).indicatorColor,
-              onChanged: (value) => {
-                setState(() {
-                  _darkTheme = value;
-                  context.read<AppSettingsCubit>().switchTheme(_darkTheme);
-                }),
-              },
-              value: _darkTheme,
+            const Text("Dark theme"),
+            SizedBox(
+              width: 64,
+              child: Center(
+                child: Switch(
+                  activeColor: Theme.of(context).indicatorColor,
+                  onChanged: (value) async {
+                    await context.read<AppSettingsCubit>().switchTheme(value);
+                    setState(() {
+                      _darkTheme = value;
+                    });
+                  },
+                  value: _darkTheme,
+                ),
+              ),
             ),
           ],
         ),
@@ -150,25 +153,84 @@ class _SettingsViewState extends State<SettingsView> {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text("Sketches compression"),
-            Slider(
-              activeColor: Theme.of(context).indicatorColor,
-              onChanged: (value) async {
-                setState(() {
-                  _compressionRatio = value;
-                });
-                await context
-                    .read<AppSettingsCubit>()
-                    .setSketchesCompression(_compressionRatio);
-              },
-              value: _compressionRatio,
-              min: 0,
-              max: 0.95,
+            Row(
+              children: [
+                Expanded(
+                  child: Slider(
+                    activeColor: Theme.of(context).indicatorColor,
+                    onChanged: (value) async {
+                      setState(() {
+                        _compressionRatio = value;
+                      });
+                      await context
+                          .read<AppSettingsCubit>()
+                          .setSketchesCompression(_compressionRatio);
+                    },
+                    value: _compressionRatio,
+                    min: 0,
+                    max: 0.95,
+                  ),
+                ),
+                SizedBox(
+                  width: 64,
+                  child: Center(
+                    child: Text(
+                        "${(_compressionRatio * 100).toStringAsFixed(1)} %"),
+                  ),
+                ),
+              ],
             ),
-            Text("${(_compressionRatio * 100).toStringAsFixed(1)} %"),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFontSize(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text("Font size"),
+            Row(
+              children: [
+                Expanded(
+                  child: Slider(
+                    divisions: 16,
+                    activeColor: Theme.of(context).indicatorColor,
+                    onChanged: (value) async {
+                      setState(() {
+                        _fontSize = value;
+                      });
+                      await context
+                          .read<AppSettingsCubit>()
+                          .setFontSize(_fontSize);
+                    },
+                    value: _fontSize,
+                    min: 8,
+                    max: 24,
+                  ),
+                ),
+                SizedBox(
+                  width: 64,
+                  child: Center(child: Text("${_fontSize.toInt()}")),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -195,6 +257,7 @@ class _SettingsViewState extends State<SettingsView> {
                   height: 16,
                 ),
                 _buildCompression(context),
+                _buildFontSize(context),
                 _buildThemeSwitch(context),
                 _buildLogOut(context),
                 const Expanded(
@@ -220,9 +283,11 @@ class _SettingsViewState extends State<SettingsView> {
   @override
   Widget build(BuildContext context) {
     if (!initialized) {
-      _darkTheme = context.read<AppSettingsCubit>().darkTheme;
-      _compressionRatio =
-          context.read<AppSettingsCubit>().getCompressionRatio();
+      var appSettings = context.read<AppSettingsCubit>();
+
+      _darkTheme = appSettings.darkTheme;
+      _compressionRatio = appSettings.getCompressionRatio();
+      _fontSize = appSettings.getFontSize();
     }
 
     return PageNavigator(

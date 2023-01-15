@@ -30,9 +30,9 @@ class AppSettingsCubit extends Cubit<SettingsState> {
           brightness: Brightness.dark),
       backgroundColor: const Color(0xFF282E33),
       scaffoldBackgroundColor: const Color(0xFF191C1F),
-      indicatorColor: Color.fromARGB(217, 41, 177, 98));
+      indicatorColor: const Color.fromARGB(217, 41, 177, 98));
 
-  final ThemeData _lightTheme = ThemeData(
+  static final ThemeData _lightTheme = ThemeData(
     appBarTheme: AppBarTheme(backgroundColor: Colors.grey.shade200),
     fontFamily: "Segoe UI",
     primarySwatch: Colors.grey,
@@ -48,35 +48,59 @@ class AppSettingsCubit extends Cubit<SettingsState> {
       cardColor: Colors.black,
       brightness: Brightness.light,
     ),
-    textTheme: TextTheme(labelMedium: TextStyle(color: Colors.black)),
+    textTheme: const TextTheme(
+      labelMedium: TextStyle(color: Colors.black),
+    ),
     backgroundColor: Colors.grey.shade300,
     scaffoldBackgroundColor: Colors.white,
-    indicatorColor: Color.fromARGB(217, 41, 177, 98),
+    indicatorColor: const Color.fromARGB(217, 41, 177, 98),
   );
 
   Future<ThemeData> initialize() async {
-    SharedPreferences.setMockInitialValues({});
     _preferences = await SharedPreferences.getInstance();
-    var darkTheme = _preferences.getBool('dark_theme');
-    // currentTheme = darkTheme != null && !darkTheme ? _lightTheme : _darkTheme;
-    currentTheme = _lightTheme;
-    darkTheme = currentTheme == _darkTheme;
+    _applyTheme();
     emit(SettingsState(theme: currentTheme));
     return currentTheme;
   }
 
-  switchTheme(bool darkTheme) {
-    currentTheme = darkTheme ? _darkTheme : _lightTheme;
-    this.darkTheme = darkTheme;
-    _preferences.setBool('dark_theme', darkTheme);
+  _applyFontSize() {
+    var fontSize = getFontSize();
+    currentTheme = ThemeData.localize(
+        darkTheme ? _darkTheme : _lightTheme,
+        TextTheme(
+          bodyText1: TextStyle(fontSize: fontSize),
+          bodyText2: TextStyle(fontSize: fontSize),
+        ));
+  }
+
+  _applyTheme() {
+    var darkTheme = _preferences.getBool('dark_theme');
+    this.darkTheme = darkTheme == null || darkTheme;
+    currentTheme = this.darkTheme ? _darkTheme : _lightTheme;
+    _applyFontSize();
+  }
+
+  Future switchTheme(bool darkTheme) async {
+    await _preferences.setBool('dark_theme', darkTheme);
+    _applyTheme();
     emit(SettingsState(theme: currentTheme));
   }
 
   Future setSketchesCompression(double compressionRatio) async {
-    await _preferences.setDouble('skecthes_compression', compressionRatio);
+    await _preferences.setDouble('sketches_compression', compressionRatio);
   }
 
   double getCompressionRatio() {
-    return _preferences.getDouble('skecthes_compression') ?? 0.25;
+    return _preferences.getDouble('sketches_compression') ?? 0.25;
+  }
+
+  Future setFontSize(double fontSize) async {
+    await _preferences.setDouble('font_size', fontSize);
+    _applyFontSize();
+    emit(SettingsState(theme: currentTheme));
+  }
+
+  double getFontSize() {
+    return _preferences.getDouble('font_size') ?? 13;
   }
 }

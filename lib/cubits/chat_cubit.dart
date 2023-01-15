@@ -1,6 +1,9 @@
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/models/message.dart';
@@ -8,7 +11,6 @@ import 'package:pentellio/models/sketch.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/services/chat_service.dart';
 import 'package:pentellio/services/image_service.dart';
-
 import '../services/user_service.dart';
 
 class EmptyState {
@@ -84,6 +86,7 @@ class ChatCubit extends Cubit<EmptyState> {
     await _loadFriends(currentUser.friends);
     await _loadChats(currentUser.friends);
     _listenChats(currentUser.friends);
+
     emit(UserState(currentUser: currentUser));
   }
 
