@@ -17,7 +17,8 @@ class RoundedRect extends StatelessWidget {
       child: SizedBox(
         width: size,
         height: size,
-        child: child,
+        child:
+            ColoredBox(color: Theme.of(context).backgroundColor, child: child),
       ),
     );
   }

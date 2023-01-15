@@ -25,6 +25,7 @@ class _DrawViewState extends State<DrawView> {
   Color pickerColor = Colors.white;
   Color currentColor = Colors.white;
   Color fontColor = Colors.black;
+  bool initialized = false;
 
   void changeColor(Color color) {
     setState(() => pickerColor = color);
@@ -68,6 +69,12 @@ class _DrawViewState extends State<DrawView> {
 
   @override
   Widget build(BuildContext context) {
+    if (!initialized) {
+      currentColor = Theme.of(context).primaryColor;
+      fontColor = currentColor.getForegroundColor();
+      initialized = true;
+    }
+
     return PageNavigator(
       previousPage: ChatView(
         friend: widget.friend,
@@ -77,7 +84,6 @@ class _DrawViewState extends State<DrawView> {
       duration: Duration(milliseconds: 200),
       child: SafeArea(
         child: Scaffold(
-          backgroundColor: Color(0xFF191C1F),
           body: Sketcher(
             color: currentColor,
             chatCubit: context.read<ChatCubit>(),

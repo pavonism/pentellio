@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -29,10 +30,17 @@ class ChatView extends StatefulWidget {
 class _ChatViewState extends State<ChatView> {
   final messageController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
+  List<Message> msgs = [];
 
   void sendMessage(BuildContext context) {
     context.read<ChatCubit>().sendMessage(messageController.text);
     messageController.clear();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    msgs = widget.friend.chat.messages.reversed.toList();
   }
 
   @override
@@ -65,7 +73,7 @@ class _ChatViewState extends State<ChatView> {
             children: [
               IconButton(
                 iconSize: 20,
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                icon: const Icon(Icons.arrow_back),
                 onPressed: () => context.read<ChatCubit>().closeChat(),
               ),
               Padding(
@@ -73,9 +81,8 @@ class _ChatViewState extends State<ChatView> {
                 child: ClipRRect(
                   borderRadius:
                       const BorderRadius.all(Radius.circular(40 * 0.2)),
-                  child: SizedBox(
-                    width: 40,
-                    height: 40,
+                  child: RoundedRect(
+                    40,
                     child: widget.friend.user.profilePictureUrl.isNotEmpty
                         ? CachedNetworkImage(
                             cacheManager: kIsWeb ? null : context.read(),
@@ -83,7 +90,7 @@ class _ChatViewState extends State<ChatView> {
                                 const CircularProgressIndicator(),
                             imageUrl: widget.friend.user.profilePictureUrl,
                           )
-                        : const ColoredBox(color: Colors.blue),
+                        : ColoredBox(color: Theme.of(context).indicatorColor),
                   ),
                 ),
               ),
@@ -133,15 +140,15 @@ class _ChatViewState extends State<ChatView> {
                           return ListView.builder(
                             key: PageStorageKey<String>(widget.friend.chatId),
                             reverse: true,
-                            itemCount: widget.friend.chat.messages.length,
+                            itemCount: msgs.length,
                             itemBuilder: (context, index) {
-                              var msg = widget.friend.chat.messages[
-                                  widget.friend.chat.messages.length -
-                                      index -
-                                      1];
+                              var msg = msgs[index];
                               var sender = widget.friend.uId == msg.sentBy
                                   ? widget.friend.user
                                   : widget.user;
+                              var firstMessage = index < msgs.length - 1 &&
+                                      msgs[index + 1].sentBy != msg.sentBy ||
+                                  index == msgs.length - 1;
 
                               return MessageTile(
                                 sender: sender,
@@ -150,6 +157,11 @@ class _ChatViewState extends State<ChatView> {
                                     : 300 + constraints.maxWidth * 0.3,
                                 message: msg,
                                 currentUser: widget.user,
+                                sameSender: index > 0 &&
+                                        msgs[index - 1].sentBy == msg.sentBy
+                                    ? true
+                                    : false,
+                                firstMessage: firstMessage,
                               );
                             },
                           );
@@ -220,16 +232,22 @@ class _ChatViewState extends State<ChatView> {
 }
 
 class MessageTile extends StatelessWidget {
-  MessageTile(this.width,
-      {required this.sender,
-      super.key,
-      required this.message,
-      required this.currentUser});
+  MessageTile(
+    this.width, {
+    required this.sender,
+    super.key,
+    required this.message,
+    required this.currentUser,
+    this.sameSender = true,
+    this.firstMessage = true,
+  });
 
   final double width;
   Message message;
   PentellioUser sender;
   PentellioUser currentUser;
+  bool sameSender;
+  bool firstMessage;
 
   Widget showPhotoInDialog(BuildContext context, String url) {
     return LayoutBuilder(builder: (context, constraints) {
@@ -249,13 +267,20 @@ class MessageTile extends StatelessWidget {
   Widget build(BuildContext context) {
     var radius = const Radius.circular(20);
 
+    var pictureProfileWidget = sameSender
+        ? const SizedBox(
+            width: 40,
+            height: 40,
+          )
+        : RoundedRect(40,
+            child: sender.profilePictureUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    cacheManager: context.read(),
+                    imageUrl: sender.profilePictureUrl)
+                : ColoredBox(color: Theme.of(context).indicatorColor));
+
     final List<Widget> singleMessage = <Widget>[
-      RoundedRect(40,
-          child: sender.profilePictureUrl.isNotEmpty
-              ? CachedNetworkImage(
-                  cacheManager: context.read(),
-                  imageUrl: sender.profilePictureUrl)
-              : const ColoredBox(color: Colors.blue)),
+      pictureProfileWidget,
       Flexible(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: width),
@@ -264,7 +289,8 @@ class MessageTile extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).backgroundColor,
-                border: Border.all(color: Colors.black, width: 1),
+                border:
+                    Border.all(color: Theme.of(context).shadowColor, width: 1),
                 borderRadius: sender.userId != currentUser.userId
                     ? BorderRadius.only(
                         bottomRight: radius, topLeft: radius, topRight: radius)
@@ -278,11 +304,12 @@ class MessageTile extends StatelessWidget {
                       ? CrossAxisAlignment.start
                       : CrossAxisAlignment.end,
                   children: [
-                    if (sender.userId != currentUser.userId)
+                    if (sender.userId != currentUser.userId && firstMessage)
                       Text(
                         sender.username,
                         textAlign: TextAlign.right,
-                        style: const TextStyle(color: Colors.lightBlueAccent),
+                        style:
+                            TextStyle(color: Theme.of(context).indicatorColor),
                       ),
                     if (message.images.isNotEmpty)
                       for (var image in message.images)
@@ -336,7 +363,8 @@ class MessageTile extends StatelessWidget {
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      padding:
+          EdgeInsets.symmetric(vertical: sameSender ? 4 : 8, horizontal: 4),
       child: Row(
           mainAxisAlignment: sender.userId == currentUser.userId
               ? MainAxisAlignment.end

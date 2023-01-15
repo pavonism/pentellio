@@ -14,12 +14,17 @@ class ThemedInput extends StatelessWidget {
       controller: controler,
       obscureText: obscureText,
       decoration: InputDecoration(
-        labelStyle: TextStyle(color: Theme.of(context).primaryColor),
+        labelStyle:
+            TextStyle(color: Theme.of(context).textTheme.labelMedium?.color),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+          borderSide: BorderSide(
+              color: Theme.of(context).textTheme.labelMedium?.color ??
+                  Colors.grey),
         ),
         border: OutlineInputBorder(
-          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+          borderSide: BorderSide(
+              color: Theme.of(context).textTheme.labelMedium?.color ??
+                  Colors.grey),
         ),
         labelText: labelText,
       ),

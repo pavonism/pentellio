@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/widgets/date_time_extensions.dart';
+import 'package:pentellio/widgets/rounded_rect.dart';
 
 import '../chat/chat.dart';
 
@@ -32,22 +33,18 @@ class ChatTile extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: Row(children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(50 * 0.4)),
-                child: SizedBox(
-                  width: 54,
-                  height: 54,
-                  child: friend.user.profilePictureUrl.isNotEmpty
-                      ? CachedNetworkImage(
-                          cacheManager: kIsWeb ? null : context.read(),
-                          placeholder: (context, url) =>
-                              const CircularProgressIndicator(),
-                          imageUrl: friend.user.profilePictureUrl,
-                        )
-                      : const ColoredBox(
-                          color: Colors.blue,
-                        ),
-                ),
+              RoundedRect(
+                50,
+                child: friend.user.profilePictureUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        cacheManager: kIsWeb ? null : context.read(),
+                        placeholder: (context, url) =>
+                            const CircularProgressIndicator(),
+                        imageUrl: friend.user.profilePictureUrl,
+                      )
+                    : const ColoredBox(
+                        color: Colors.blue,
+                      ),
               ),
               const SizedBox(
                 width: 6,
