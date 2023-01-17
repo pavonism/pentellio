@@ -38,15 +38,18 @@ class _ChatViewState extends State<ChatView> {
 
   void trySendMessage(BuildContext context) async {
     if (messageController.text.trim().isEmpty) return;
-    await context.read<ChatCubit>().sendMessage(messageController.text);
-    messageController.clear();
+    var msg = messageController.text;
+    setState(() {
+      messageController.clear();
+    });
+    await context.read<ChatCubit>().sendMessage(msg);
   }
 
   _pickImagesFromGallery(ChatCubit chatCubit) async {
     if (!kIsWeb) {
       bool result = await InternetConnectionChecker().hasConnection;
       if (!result) {
-        showNoConnectionDialog();
+        _showNoConnectionDialog();
         return;
       }
     }
@@ -60,7 +63,7 @@ class _ChatViewState extends State<ChatView> {
   _takeCameraPicture(ChatCubit chatCubit) async {
     bool result = await InternetConnectionChecker().hasConnection;
     if (!result) {
-      showNoConnectionDialog();
+      _showNoConnectionDialog();
       return;
     }
 
@@ -72,7 +75,7 @@ class _ChatViewState extends State<ChatView> {
     }
   }
 
-  showNoConnectionDialog() {
+  _showNoConnectionDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -106,15 +109,8 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    var msgs = widget.friend.chat.messages.reversed.toList();
-    var title = widget.friend.chat.userIdToUsername.length == 1
-        ? widget.user.username
-        : widget.friend.chat.userIdToUsername.entries
-            .firstWhere((element) => element.key != widget.user.userId)
-            .value;
-
+  Widget _buildNavidation(
+      {required BuildContext context, required Widget child}) {
     return PageNavigator(
       onPreviousPage: context.read<ChatCubit>().closeChat,
       previousPage: !widget.landscapeMode
@@ -129,181 +125,189 @@ class _ChatViewState extends State<ChatView> {
         preview: true,
       ),
       onNextPage: context.read<ChatCubit>().openDrawStream,
-      child: Scaffold(
-        appBar: AppBar(
-          titleTextStyle: TextStyle(
-              fontSize: Theme.of(context).textTheme.labelLarge?.fontSize,
-              color: Theme.of(context).textTheme.labelLarge?.color),
-          automaticallyImplyLeading: false,
-          titleSpacing: 0,
-          title: Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  context.read<ChatCubit>().closeChat();
+      child: child,
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      titleTextStyle: TextStyle(
+          fontSize: Theme.of(context).textTheme.labelLarge?.fontSize,
+          color: Theme.of(context).textTheme.labelLarge?.color),
+      automaticallyImplyLeading: false,
+      titleSpacing: 0,
+      title: Row(
+        children: [
+          IconButton(
+            onPressed: () {
+              context.read<ChatCubit>().closeChat();
+            },
+            icon: const Icon(Icons.arrow_back),
+            splashRadius: 20,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.all(Radius.circular(40 * 0.2)),
+              child: RoundedRect(
+                40,
+                child: widget.friend.user.profilePictureUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        cacheManager: kIsWeb ? null : context.read(),
+                        placeholder: (context, url) =>
+                            const CircularProgressIndicator(),
+                        imageUrl: widget.friend.user.profilePictureUrl,
+                      )
+                    : ColoredBox(color: Theme.of(context).indicatorColor),
+              ),
+            ),
+          ),
+          const SizedBox(
+            width: 4,
+          ),
+          Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(widget.friend.user.username),
+                Text(widget.friend.user.lastSeen == null
+                    ? 'Active'
+                    : 'Last seen ${widget.friend.user.lastSeen!.timeAgo()}'),
+              ]),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                  onPressed: () {
+                    context.read<ChatCubit>().openDrawStream();
+                  },
+                  icon: const Icon(Icons.draw_rounded)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessages(BuildContext context) {
+    var msgs = widget.friend.chat.messages.reversed.toList();
+
+    return Expanded(
+      child: SelectionArea(
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(dragDevices: {
+            PointerDeviceKind.touch,
+            PointerDeviceKind.mouse,
+            PointerDeviceKind.trackpad,
+            PointerDeviceKind.unknown
+          }),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return ListView.builder(
+                key: PageStorageKey<String>(widget.friend.chat.chatId),
+                reverse: true,
+                itemCount: msgs.length,
+                itemBuilder: (context, index) {
+                  var msg = msgs[index];
+                  var sender = widget.friend.uId == msg.sentBy
+                      ? widget.friend.user
+                      : widget.user;
+                  var firstMessageFromOtherUser = index < msgs.length - 1 &&
+                          msgs[index + 1].sentBy != msg.sentBy ||
+                      index == msgs.length - 1;
+
+                  var showDate = index < msgs.length - 1 &&
+                          msgs[index].sentTime.day !=
+                              msgs[index + 1].sentTime.day ||
+                      index == msgs.length - 1;
+
+                  return Column(mainAxisSize: MainAxisSize.min, children: [
+                    if (showDate) ChatTimeDivider(date: msgs[index].sentTime),
+                    MessageTile(
+                      sender: sender,
+                      constraints.maxWidth * 0.6 < 300
+                          ? constraints.maxWidth
+                          : 300 + constraints.maxWidth * 0.3,
+                      message: msg,
+                      currentUser: widget.user,
+                      sameSender:
+                          index > 0 && msgs[index - 1].sentBy == msg.sentBy
+                              ? true
+                              : false,
+                      firstMessage: firstMessageFromOtherUser,
+                    ),
+                  ]);
                 },
-                icon: const Icon(Icons.arrow_back),
-                splashRadius: 20,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: ClipRRect(
-                  borderRadius:
-                      const BorderRadius.all(Radius.circular(40 * 0.2)),
-                  child: RoundedRect(
-                    40,
-                    child: widget.friend.user.profilePictureUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                            cacheManager: kIsWeb ? null : context.read(),
-                            placeholder: (context, url) =>
-                                const CircularProgressIndicator(),
-                            imageUrl: widget.friend.user.profilePictureUrl,
-                          )
-                        : ColoredBox(color: Theme.of(context).indicatorColor),
-                  ),
-                ),
-              ),
-              const SizedBox(
-                width: 4,
-              ),
-              Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title),
-                    Text(widget.friend.user.lastSeen == null
-                        ? 'Active'
-                        : 'Last seen ${widget.friend.user.lastSeen!.timeAgo()}'),
-                  ]),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                      onPressed: () {
-                        context.read<ChatCubit>().openDrawStream();
-                      },
-                      icon: const Icon(Icons.draw_rounded)),
-                ),
-              ),
-            ],
+              );
+            },
           ),
         ),
-        body: Container(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Column(
-              children: [
-                Expanded(
-                  child: SelectionArea(
-                    child: ScrollConfiguration(
-                      behavior: ScrollConfiguration.of(context)
-                          .copyWith(dragDevices: {
-                        PointerDeviceKind.touch,
-                        PointerDeviceKind.mouse,
-                        PointerDeviceKind.trackpad,
-                        PointerDeviceKind.unknown
-                      }),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          return ListView.builder(
-                            key: PageStorageKey<String>(
-                                widget.friend.chat.chatId),
-                            reverse: true,
-                            itemCount: msgs.length,
-                            itemBuilder: (context, index) {
-                              var msg = msgs[index];
-                              var sender = widget.friend.uId == msg.sentBy
-                                  ? widget.friend.user
-                                  : widget.user;
-                              var firstMessageFromOtherUser = index <
-                                          msgs.length - 1 &&
-                                      msgs[index + 1].sentBy != msg.sentBy ||
-                                  index == msgs.length - 1;
+      ),
+    );
+  }
 
-                              var showDate = index < msgs.length - 1 &&
-                                      msgs[index].sentTime.day !=
-                                          msgs[index + 1].sentTime.day ||
-                                  index == msgs.length - 1;
-
-                              return Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (showDate)
-                                      ChatTimeDivider(
-                                          date: msgs[index].sentTime),
-                                    MessageTile(
-                                      sender: sender,
-                                      constraints.maxWidth * 0.6 < 300
-                                          ? constraints.maxWidth
-                                          : 300 + constraints.maxWidth * 0.3,
-                                      message: msg,
-                                      currentUser: widget.user,
-                                      sameSender: index > 0 &&
-                                              msgs[index - 1].sentBy ==
-                                                  msg.sentBy
-                                          ? true
-                                          : false,
-                                      firstMessage: firstMessageFromOtherUser,
-                                    ),
-                                  ]);
-                            },
-                          );
-                        },
-                      ),
-                    ),
+  Widget _buildMessageBox(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!kIsWeb)
+            IconButton(
+                onPressed: () => _takeCameraPicture(context.read()),
+                icon: const Icon(Icons.camera_alt_outlined)),
+          IconButton(
+              onPressed: () => _pickImagesFromGallery(context.read()),
+              icon: const Icon(Icons.photo)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ConstrainedBox(
+              constraints:
+                  BoxConstraints.loose(const Size(double.infinity, 200)),
+              child: SingleChildScrollView(
+                child: TextFormField(
+                  textInputAction: TextInputAction.none,
+                  controller: messageController,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Write a message...',
                   ),
                 ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      if (!kIsWeb)
-                        IconButton(
-                            onPressed: () => _takeCameraPicture(context.read()),
-                            icon: const Icon(Icons.camera_alt_outlined)),
-                      IconButton(
-                          onPressed: () =>
-                              _pickImagesFromGallery(context.read()),
-                          icon: const Icon(Icons.photo)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints.loose(
-                              const Size(double.infinity, 200)),
-                          child: SingleChildScrollView(
-                            child: TextFormField(
-                              textInputAction: TextInputAction.none,
-                              controller: messageController,
-                              maxLines: null,
-                              keyboardType: TextInputType.multiline,
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                hintText: 'Write a message...',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 50,
-                        child: IconButton(
-                          onPressed: () {
-                            trySendMessage(context);
-                          },
-                          splashRadius: 25,
-                          icon: const Icon(
-                            Icons.send,
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
+          ),
+          SizedBox(
+            width: 50,
+            child: IconButton(
+              onPressed: () {
+                trySendMessage(context);
+              },
+              splashRadius: 25,
+              icon: const Icon(
+                Icons.send,
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildNavidation(
+      context: context,
+      child: Scaffold(
+        appBar: _buildAppBar(context),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Column(
+            children: [
+              _buildMessages(context),
+              _buildMessageBox(context),
+            ],
           ),
         ),
       ),
@@ -365,6 +369,23 @@ class MessageTile extends StatelessWidget {
     });
   }
 
+  Widget _buildImageInMessage(BuildContext context, UrlImage image) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: InkWell(
+        onTap: () {
+          showDialog(
+              context: context,
+              builder: (context) => showPhotoInDialog(context, image.url));
+        },
+        child: CachedNetworkImage(
+            placeholder: (context, url) => const CircularProgressIndicator(),
+            cacheManager: kIsWeb ? null : context.read(),
+            imageUrl: image.url),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var radius = const Radius.circular(20);
@@ -415,22 +436,7 @@ class MessageTile extends StatelessWidget {
                       ),
                     if (message.images.isNotEmpty)
                       for (var image in message.images)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: InkWell(
-                            onTap: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) =>
-                                      showPhotoInDialog(context, image.url));
-                            },
-                            child: CachedNetworkImage(
-                                placeholder: (context, url) =>
-                                    const CircularProgressIndicator(),
-                                cacheManager: kIsWeb ? null : context.read(),
-                                imageUrl: image.url),
-                          ),
-                        ),
+                        _buildImageInMessage(context, image),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.end,
