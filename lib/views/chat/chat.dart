@@ -152,23 +152,37 @@ class _ChatViewState extends State<ChatView> {
                               var sender = widget.friend.uId == msg.sentBy
                                   ? widget.friend.user
                                   : widget.user;
-                              var firstMessage = index < msgs.length - 1 &&
+                              var firstMessageFromOtherUser = index <
+                                          msgs.length - 1 &&
                                       msgs[index + 1].sentBy != msg.sentBy ||
                                   index == msgs.length - 1;
 
-                              return MessageTile(
-                                sender: sender,
-                                constraints.maxWidth * 0.6 < 300
-                                    ? constraints.maxWidth
-                                    : 300 + constraints.maxWidth * 0.3,
-                                message: msg,
-                                currentUser: widget.user,
-                                sameSender: index > 0 &&
-                                        msgs[index - 1].sentBy == msg.sentBy
-                                    ? true
-                                    : false,
-                                firstMessage: firstMessage,
-                              );
+                              var showDate = index < msgs.length - 1 &&
+                                      msgs[index].sentTime.day !=
+                                          msgs[index + 1].sentTime.day ||
+                                  index == msgs.length - 1;
+
+                              return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (showDate)
+                                      ChatTimeDivider(
+                                          date: msgs[index].sentTime),
+                                    MessageTile(
+                                      sender: sender,
+                                      constraints.maxWidth * 0.6 < 300
+                                          ? constraints.maxWidth
+                                          : 300 + constraints.maxWidth * 0.3,
+                                      message: msg,
+                                      currentUser: widget.user,
+                                      sameSender: index > 0 &&
+                                              msgs[index - 1].sentBy ==
+                                                  msg.sentBy
+                                          ? true
+                                          : false,
+                                      firstMessage: firstMessageFromOtherUser,
+                                    ),
+                                  ]);
                             },
                           );
                         },
@@ -242,6 +256,26 @@ class _ChatViewState extends State<ChatView> {
         ),
       ),
     );
+  }
+}
+
+class ChatTimeDivider extends StatelessWidget {
+  const ChatTimeDivider({
+    Key? key,
+    required this.date,
+  }) : super(key: key);
+
+  final DateTime date;
+
+  @override
+  Widget build(BuildContext context) {
+    return Flexible(
+        child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: Center(
+        child: Text(date.date()),
+      ),
+    ));
   }
 }
 
