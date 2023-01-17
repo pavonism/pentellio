@@ -109,134 +109,157 @@ class _DrawViewState extends State<DrawView> with TickerProviderStateMixin {
   Tween<double>? _tween;
 
   Widget _drawButtons(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      if (_tween == null || _tween!.end != constraints.maxHeight) {
-        _tween = Tween<double>(begin: 0, end: constraints.maxHeight);
-      }
-      return AnimatedBuilder(
-          animation: _sliderAnimation,
-          builder: (context, child) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    const SizedBox(
-                      height: 16,
-                    ),
-                    if (isDrawing)
-                      FloatingActionButton(
-                        mini: true,
-                        foregroundColor: _fontColor,
-                        onPressed: () {
-                          context.read<ChatCubit>().clearSketches();
-                        },
-                        child: const Icon(Icons.insert_page_break),
-                      ),
-                    const SizedBox(
-                      height: 16,
-                    ),
-                    if (isDrawing && showWeightSlider)
-                      SizedBox(
-                        width: 50,
-                        child: RotatedBox(
-                          quarterTurns: 3,
-                          child: SizedBox(
-                            width: _sliderTween.evaluate(_sliderAnimation),
-                            child: Slider(
-                                label: weight.toStringAsFixed(2),
-                                inactiveColor: Theme.of(context).primaryColor,
-                                activeColor: Theme.of(context).indicatorColor,
-                                min: 1,
-                                max: 50,
-                                value: weight,
-                                onChanged: (value) {
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            mini: true,
+            onPressed: () {
+              context.read<ChatCubit>().closeDrawStream();
+            },
+            child: const Icon(Icons.arrow_back),
+          ),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (_tween == null || _tween!.end != constraints.maxHeight) {
+                  _tween = Tween<double>(begin: 0, end: constraints.maxHeight);
+                }
+                return AnimatedBuilder(
+                    animation: _sliderAnimation,
+                    builder: (context, child) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              if (isDrawing)
+                                FloatingActionButton(
+                                  mini: true,
+                                  foregroundColor: _fontColor,
+                                  onPressed: () {
+                                    context.read<ChatCubit>().clearSketches();
+                                  },
+                                  child: const Icon(Icons.insert_page_break),
+                                ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              if (isDrawing && showWeightSlider)
+                                SizedBox(
+                                  width: 50,
+                                  child: RotatedBox(
+                                    quarterTurns: 3,
+                                    child: SizedBox(
+                                      width: _sliderTween
+                                          .evaluate(_sliderAnimation),
+                                      child: Slider(
+                                          label: weight.toStringAsFixed(2),
+                                          inactiveColor:
+                                              Theme.of(context).primaryColor,
+                                          activeColor:
+                                              Theme.of(context).indicatorColor,
+                                          min: 1,
+                                          max: 50,
+                                          value: weight,
+                                          onChanged: (value) {
+                                            setState(() {
+                                              weight = value;
+                                            });
+                                          }),
+                                    ),
+                                  ),
+                                ),
+                              if (isDrawing)
+                                FloatingActionButton(
+                                  mini: true,
+                                  foregroundColor: _fontColor,
+                                  backgroundColor: showWeightSlider
+                                      ? Theme.of(context).indicatorColor
+                                      : null,
+                                  onPressed: () {
+                                    if (!showWeightSlider) {
+                                      _sliderAnimationController.forward();
+                                      setState(() {
+                                        showWeightSlider = true;
+                                      });
+                                    } else {
+                                      _sliderAnimationController
+                                          .reverse()
+                                          .whenComplete(
+                                            () => setState(() {
+                                              showWeightSlider = false;
+                                            }),
+                                          );
+                                    }
+                                  },
+                                  child: showWeightSlider
+                                      ? Text(
+                                          weight.toStringAsFixed(1),
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .indicatorColor
+                                                  .getForegroundColor()),
+                                        )
+                                      : const Icon(Icons.line_weight),
+                                ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              if (isDrawing)
+                                FloatingActionButton(
+                                  mini: true,
+                                  onPressed: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: buildColorPickerDialog);
+                                  },
+                                  foregroundColor:
+                                      _currentColor.getForegroundColor(),
+                                  backgroundColor: _currentColor,
+                                  child: const Icon(Icons.color_lens),
+                                ),
+                              Flexible(
+                                  child: AnimatedBuilder(
+                                animation: _buttonsAnimation,
+                                builder: (context, child) {
+                                  return SizedBox(
+                                    height: _tween!.evaluate(_buttonsAnimation),
+                                    width: 0,
+                                  );
+                                },
+                              )),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              FloatingActionButton(
+                                foregroundColor: _fontColor,
+                                backgroundColor: isDrawing
+                                    ? Theme.of(context).indicatorColor
+                                    : null,
+                                onPressed: () {
                                   setState(() {
-                                    weight = value;
+                                    if (!isDrawing) {
+                                      isDrawing = true;
+                                      _controller.forward();
+                                    } else {
+                                      _controller.reverse().whenComplete(() =>
+                                          setState((() => isDrawing = false)));
+                                    }
                                   });
-                                }),
-                          ),
-                        ),
-                      ),
-                    if (isDrawing)
-                      FloatingActionButton(
-                        mini: true,
-                        foregroundColor: _fontColor,
-                        backgroundColor: showWeightSlider
-                            ? Theme.of(context).indicatorColor
-                            : null,
-                        onPressed: () {
-                          if (!showWeightSlider) {
-                            _sliderAnimationController.forward();
-                            setState(() {
-                              showWeightSlider = true;
-                            });
-                          } else {
-                            _sliderAnimationController.reverse().whenComplete(
-                                  () => setState(() {
-                                    showWeightSlider = false;
-                                  }),
-                                );
-                          }
-                        },
-                        child: showWeightSlider
-                            ? Text(
-                                weight.toStringAsFixed(1),
-                                style: TextStyle(
-                                    color: Theme.of(context)
-                                        .indicatorColor
-                                        .getForegroundColor()),
-                              )
-                            : const Icon(Icons.line_weight),
-                      ),
-                    const SizedBox(
-                      height: 16,
-                    ),
-                    if (isDrawing)
-                      FloatingActionButton(
-                        mini: true,
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: buildColorPickerDialog);
-                        },
-                        foregroundColor: _currentColor.getForegroundColor(),
-                        backgroundColor: _currentColor,
-                        child: const Icon(Icons.color_lens),
-                      ),
-                    Flexible(
-                        child: AnimatedBuilder(
-                      animation: _buttonsAnimation,
-                      builder: (context, child) {
-                        return SizedBox(
-                          height: _tween!.evaluate(_buttonsAnimation),
-                          width: 0,
-                        );
-                      },
-                    )),
-                    const SizedBox(
-                      height: 16,
-                    ),
-                    FloatingActionButton(
-                      foregroundColor: _fontColor,
-                      backgroundColor:
-                          isDrawing ? Theme.of(context).indicatorColor : null,
-                      onPressed: () {
-                        setState(() {
-                          if (!isDrawing) {
-                            isDrawing = true;
-                            _controller.forward();
-                          } else {
-                            _controller.reverse().whenComplete(
-                                () => setState((() => isDrawing = false)));
-                          }
-                        });
-                      },
-                      child: const Icon(Icons.edit),
-                    ),
-                    const SizedBox(
-                      height: 16,
-                    ),
-                  ]));
-    });
+                                },
+                                child: const Icon(Icons.edit),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                            ]));
+              },
+            ),
+          )
+        ]);
   }
 
   Widget _buildDrawArea(BuildContext context) {
