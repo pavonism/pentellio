@@ -8,7 +8,7 @@ class AuthCubit extends Cubit<AuthState> {
   AuthCubit({required this.authService, required this.userService})
       : super(
           authService.isSignedIn
-              ? SignedInState(uid: authService.GetCurrentUserId()!)
+              ? SignedInState(uid: authService.getCurrentUserId()!)
               : NeedsSigningInState(),
         );
 
@@ -35,10 +35,10 @@ class AuthCubit extends Cubit<AuthState> {
 
       switch (result) {
         case SignUpResult.success:
-          var userId = authService.GetCurrentUserId()!;
-          emit(SignedInState(uid: userId));
-          userService.addNewUser(
+          var userId = authService.getCurrentUserId()!;
+          await userService.addNewUser(
               PentellioUser(email: email, userId: userId, username: username));
+          emit(SignedInState(uid: userId));
           break;
         case SignUpResult.invalidEmail:
           emit(registerState..error = 'Invalid email');
@@ -70,7 +70,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       switch (result) {
         case SignInResult.success:
-          var userId = authService.GetCurrentUserId()!;
+          var userId = authService.getCurrentUserId()!;
           emit(SignedInState(uid: userId));
           break;
         case SignInResult.invalidEmail:

@@ -101,7 +101,7 @@ class FriendCollection extends DelegatingList<Friend> {
 
   static int _compareChats(Friend friend1, Friend friend2) {
     if (friend1.chat.messages.isEmpty) {
-      return friend2.chat.messages.isEmpty ? 0 : 1;
+      return friend2.chat.messages.isEmpty ? 0 : -1;
     }
 
     if (friend2.chat.messages.isEmpty) {

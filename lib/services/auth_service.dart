@@ -42,7 +42,6 @@ class AuthService {
       var credential = await _firebaseAuth.createUserWithEmailAndPassword(
           email: email, password: password);
 
-
       return SignUpResult.success;
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -60,7 +59,7 @@ class AuthService {
     }
   }
 
-  String? GetCurrentUserId() {
+  String? getCurrentUserId() {
     return _firebaseAuth.currentUser?.uid;
   }
 

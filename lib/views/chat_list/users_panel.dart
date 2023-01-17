@@ -9,9 +9,15 @@ import 'package:pentellio/views/page_navigator.dart';
 import '../../services/user_service.dart';
 
 class UserListPanel extends StatefulWidget {
-  UserListPanel({super.key, required this.user});
+  UserListPanel(
+      {super.key,
+      required this.user,
+      required this.foundUsers,
+      required this.cubit});
 
   PentellioUser user;
+  List<PentellioUser> foundUsers;
+  ChatCubit cubit;
 
   @override
   State<UserListPanel> createState() => _UserListPanelState();
@@ -24,7 +30,7 @@ class _UserListPanelState extends State<UserListPanel> {
   void initState() {
     super.initState();
     _controller.addListener(() {
-      setState(() {});
+      widget.cubit.searchUsers(_controller.text);
     });
   }
 
@@ -64,16 +70,11 @@ class _UserListPanelState extends State<UserListPanel> {
             ),
           ),
         ),
-        body: FutureBuilder(
-          future: context.read<UserService>().searchUsers(_controller.text),
-          builder: (context, snapshot) {
-            return ListView.builder(
-              itemCount: snapshot.data?.length ?? 0,
-              itemBuilder: ((context, index) {
-                return UserTile(pentellioUser: snapshot.data![index]);
-              }),
-            );
-          },
+        body: ListView.builder(
+          itemCount: widget.foundUsers.length,
+          itemBuilder: ((context, index) {
+            return UserTile(pentellioUser: widget.foundUsers[index]);
+          }),
         ),
       ),
     );

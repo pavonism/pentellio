@@ -86,7 +86,11 @@ class PentellioPagesPortrait extends StatelessWidget {
             user: state.currentUser,
           );
         } else if (state is SearchingUsersState) {
-          return UserListPanel(user: state.currentUser);
+          return UserListPanel(
+            user: state.currentUser,
+            foundUsers: state.users,
+            cubit: context.read(),
+          );
         } else if (state is UserState) {
           return ChatPanelPortrait(
             user: state.currentUser,
@@ -129,7 +133,11 @@ class PentellioPagesLandscape extends StatelessWidget {
                     user: state.currentUser,
                   );
                 } else if (state is SearchingUsersState) {
-                  return UserListPanel(user: state.currentUser);
+                  return UserListPanel(
+                    user: state.currentUser,
+                    foundUsers: state.users,
+                    cubit: context.read(),
+                  );
                 } else if (state is UserState) {
                   return ChatPanelPortrait(
                     user: state.currentUser,

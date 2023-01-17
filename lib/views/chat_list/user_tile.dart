@@ -19,6 +19,7 @@ class UserTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
+        context.read<ChatCubit>().closeSearching();
         context.read<ChatCubit>().createAndOpenChat(pentellioUser);
       },
       child: ConstrainedBox(
@@ -56,7 +57,6 @@ class UserTile extends StatelessWidget {
                             pentellioUser.username,
                             textAlign: TextAlign.left,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white),
                           ),
                         ),
                         const SizedBox(

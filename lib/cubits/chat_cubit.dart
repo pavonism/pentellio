@@ -32,9 +32,11 @@ class ChatOpenedState extends ChatState {
 }
 
 class SearchingUsersState extends UserState {
-  SearchingUsersState({required super.currentUser}) {
+  SearchingUsersState({required super.currentUser, this.users = const []}) {
     isSearchingUsers = true;
   }
+
+  List<PentellioUser> users;
 }
 
 class DrawingChatState extends ChatState {
@@ -64,8 +66,22 @@ class ChatCubit extends Cubit<EmptyState> {
   Friend? openedChat;
   Friend? lastOpenedChat;
 
-  void StartSearchingUsers() {
-    emit(SearchingUsersState(currentUser: currentUser));
+  void startSearchingUsers() {
+    searchUsers("");
+  }
+
+  void closeSearching() {
+    userService.searchStream?.cancel();
+  }
+
+  List<PentellioUser> foundUsers = [];
+
+  void searchUsers(String phrase) async {
+    foundUsers = [];
+    userService.searchUsers(phrase, (users) {
+      foundUsers.addAll(users);
+      emit(SearchingUsersState(currentUser: currentUser, users: foundUsers));
+    });
   }
 
   void openChat(Friend friend) {
@@ -93,11 +109,6 @@ class ChatCubit extends Cubit<EmptyState> {
     emit(UserState(currentUser: currentUser));
   }
 
-  void searchUsers(String phrase) async {
-    var users = await userService.searchUsers(phrase);
-    emit(SearchingUsersState(currentUser: currentUser));
-  }
-
   void createAndOpenChat(PentellioUser user) async {
     Friend? friend;
 
@@ -112,11 +123,11 @@ class ChatCubit extends Cubit<EmptyState> {
       await userService.attachChatToUsers(
           currentUser.userId, user.userId, chatId);
       friend = Friend(uId: user.userId, chatId: chatId);
-      currentUser.friends.add(friend);
       await userService.loadFriend(friend);
       await chatService.loadChatForFriend(friend);
       chatService.listenChat(
           friend.chat, (msg) => _messageReceived(msg, friend!));
+      currentUser.friends.add(friend);
     }
 
     openChat(friend);

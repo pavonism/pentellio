@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,9 +13,9 @@ class UserService {
 
   final _users = FirebaseDatabase.instance.ref('users');
 
-  void addNewUser(PentellioUser user) {
+  Future addNewUser(PentellioUser user) async {
     var newUserRef = _users.child(user.userId);
-    newUserRef.set(user.toJson());
+    await newUserRef.set(user.toJson());
   }
 
   List<PentellioUser> _mapToUsers(DatabaseEvent event) {
@@ -37,7 +38,7 @@ class UserService {
 
   Future<PentellioUser> getUser(String userId) async {
     try {
-      var data = await FirebaseDatabase.instance.ref('users/' + userId).get();
+      var data = await FirebaseDatabase.instance.ref('users/$userId').get();
 
       var map = data.value as Map;
       return PentellioUser.fromJson(data.value!, userId: data.key!);
@@ -48,23 +49,30 @@ class UserService {
     return PentellioUser(email: '', userId: '');
   }
 
-  Future<List<PentellioUser>> searchUsers(String text) async {
-    List<PentellioUser> users = [];
+  StreamSubscription<DatabaseEvent>? searchStream;
+
+  void searchUsers(
+      String text, Function(List<PentellioUser>) function) async {
+    searchStream?.cancel();
 
     try {
-      await _users
+      searchStream = await _users
           .orderByChild('username')
           .startAt(text)
           .endAt("$text\uf8ff")
-          .once()
-          .then((value) {
-        users = _mapToUsers(value);
+          .onValue
+          .listen((event) {
+        if (event.snapshot.exists) {
+          function(_mapToUsers(event));
+        }
       });
+      //     .once()
+      //     .then((value) {
+      //   users = _mapToUsers(value);
+      // });
     } catch (e) {
       log(e.toString(), name: searchUsers.toString());
     }
-
-    return users;
   }
 
   void addFriend(String uId, String friendId, String chatId) async {

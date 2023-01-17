@@ -82,7 +82,7 @@ class _ChatPanelPortraitState extends State<ChatPanelPortrait> {
             )),
             IconButton(
               onPressed: () {
-                context.read<ChatCubit>().StartSearchingUsers();
+                context.read<ChatCubit>().startSearchingUsers();
               },
               icon: const Icon(Icons.search),
               splashRadius: 25,
