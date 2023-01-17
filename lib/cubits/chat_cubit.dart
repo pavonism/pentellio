@@ -86,13 +86,14 @@ class ChatCubit extends Cubit<EmptyState> {
   void _initialize(String userId) async {
     currentUser = await userService.getUser(userId);
     await _loadFriends(currentUser.friends);
+    userService.listenStatusUpdates(currentUser.friends);
     await _loadChats(currentUser.friends);
     _listenChats(currentUser.friends);
 
     emit(UserState(currentUser: currentUser));
   }
 
-  void SearchUsers(String phrase) async {
+  void searchUsers(String phrase) async {
     var users = await userService.searchUsers(phrase);
     emit(SearchingUsersState(currentUser: currentUser));
   }
@@ -107,7 +108,7 @@ class ChatCubit extends Cubit<EmptyState> {
     }
 
     if (friend == null) {
-      var chatId = await chatService.CreateNewChat(currentUser, user);
+      var chatId = await chatService.createNewChat(currentUser, user);
       await userService.attachChatToUsers(
           currentUser.userId, user.userId, chatId);
       friend = Friend(uId: user.userId, chatId: chatId);

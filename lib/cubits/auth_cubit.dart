@@ -98,6 +98,9 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> signOut() async {
+    if (state is SignedInState) {
+      userService.userLeftApp((state as SignedInState).uid);
+    }
     emit(SigningInState());
     await authService.signOut();
     emit(SignedOutState());

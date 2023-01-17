@@ -27,7 +27,7 @@ class ChatService {
     await newMessage.set(msg.toJson());
   }
 
-  void GetUserChats() {
+  void getUserChats() {
     List<Chat> chats = [];
     _chats.onValue.listen((event) {
       final _snapshot = event.snapshot;
@@ -38,7 +38,7 @@ class ChatService {
     });
   }
 
-  Future<String> CreateNewChat(PentellioUser user1, PentellioUser user2) async {
+  Future<String> createNewChat(PentellioUser user1, PentellioUser user2) async {
     var newChat = Chat(userIdToUsername: {
       user1.userId: user1.username,
       user2.userId: user2.username
