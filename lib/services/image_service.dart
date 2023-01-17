@@ -64,7 +64,6 @@ class IOFileSystem implements c.FileSystem {
   IOFileSystem(String key) : _fileDir = !kIsWeb ? createDirectory(key) : null;
 
   static Future<Directory> createDirectory(String key) async {
-    // use documents directory instead of temp
     var baseDir = await getApplicationDocumentsDirectory();
     var path = p.join(baseDir.path, key);
 

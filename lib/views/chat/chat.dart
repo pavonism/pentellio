@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
 import 'package:pentellio/models/message.dart';
 import 'package:pentellio/models/user.dart';
@@ -12,6 +13,7 @@ import 'package:pentellio/views/chat_list/chat_list.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
 import 'package:pentellio/widgets/date_time_extensions.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
+import 'package:pentellio/widgets/themed_button.dart';
 import 'package:photo_view/photo_view.dart';
 
 import '../page_navigator.dart';
@@ -40,6 +42,70 @@ class _ChatViewState extends State<ChatView> {
     if (messageController.text.trim().isEmpty) return;
     await context.read<ChatCubit>().sendMessage(messageController.text);
     messageController.clear();
+  }
+
+  _pickImagesFromGallery(ChatCubit chatCubit) async {
+    if (!kIsWeb) {
+      bool result = await InternetConnectionChecker().hasConnection;
+      if (!result) {
+        showNoConnectionDialog();
+        return;
+      }
+    }
+
+    var images = await _imagePicker.pickMultiImage();
+    await chatCubit.sendMessageWithImages(messageController.text, images);
+
+    messageController.clear();
+  }
+
+  _takeCameraPicture(ChatCubit chatCubit) async {
+    bool result = await InternetConnectionChecker().hasConnection;
+    if (!result) {
+      showNoConnectionDialog();
+      return;
+    }
+
+    var image = await _imagePicker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      await chatCubit.sendMessageWithImages(messageController.text, [image]);
+
+      messageController.clear();
+    }
+  }
+
+  showNoConnectionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(50))),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        content: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ConstrainedBox(
+                  constraints: BoxConstraints.loose(const Size(200, 32)),
+                  child: const Text(
+                      "Cannot send an image. \nNo Internet connection.")),
+              const Icon(Icons.error_outline)
+            ],
+          ),
+        ),
+        actions: [
+          Center(
+            child: ThemedButton(
+              child: const Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -198,23 +264,11 @@ class _ChatViewState extends State<ChatView> {
                     children: [
                       if (!kIsWeb)
                         IconButton(
-                            onPressed: () async {
-                              var image = await _imagePicker.pickImage(
-                                  source: ImageSource.camera);
-                              if (image != null) {
-                                context.read<ChatCubit>().sendMessageWithImages(
-                                    messageController.text, [image]);
-                                messageController.clear();
-                              }
-                            },
+                            onPressed: () => _takeCameraPicture(context.read()),
                             icon: const Icon(Icons.camera_alt_outlined)),
                       IconButton(
-                          onPressed: () async {
-                            var images = await _imagePicker.pickMultiImage();
-                            context.read<ChatCubit>().sendMessageWithImages(
-                                messageController.text, images);
-                            messageController.clear();
-                          },
+                          onPressed: () =>
+                              _pickImagesFromGallery(context.read()),
                           icon: const Icon(Icons.photo)),
                       const SizedBox(width: 8),
                       Expanded(
