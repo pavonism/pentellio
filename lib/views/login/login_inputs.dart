@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/auth_cubit.dart';
 import 'package:pentellio/providers/logging_controlers_provider.dart';
-import 'package:pentellio/services/chat_service.dart';
 import 'package:pentellio/views/login/register.dart';
 import 'package:pentellio/widgets/themed_button.dart';
 import 'package:pentellio/widgets/themed_form_field.dart';
@@ -41,7 +40,7 @@ class PentellioLoginInputs extends StatefulWidget {
 class _PentellioLoginInputsState extends State<PentellioLoginInputs> {
   final _formKey = GlobalKey<FormState>();
   final RegExp emailRegExp =
-      RegExp("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+\$)");
+      RegExp("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+\$)");
 
   @override
   Widget build(BuildContext context) {

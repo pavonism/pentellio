@@ -3,9 +3,6 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pentellio/cubits/app_settings_cubit.dart';
@@ -18,7 +15,7 @@ import 'package:pentellio/views/page_navigator.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
 
 class SettingsView extends StatefulWidget {
-  SettingsView({super.key, required this.user, this.preview = false});
+  const SettingsView({super.key, required this.user, this.preview = false});
 
   final PentellioUser user;
   final bool preview;
@@ -272,7 +269,7 @@ class _SettingsViewState extends State<SettingsView> {
                   alignment: Alignment.bottomCenter,
                   child: widget.preview
                       ? const Text("")
-                      : PentellioText(
+                      : const PentellioText(
                           fontSize: 50,
                           text: "Pentellio",
                         ),

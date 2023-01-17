@@ -7,8 +7,6 @@ import 'package:pentellio/models/user.dart';
 import 'package:pentellio/widgets/date_time_extensions.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
 
-import '../chat/chat.dart';
-
 class ChatTile extends StatelessWidget {
   const ChatTile({super.key, required this.friend});
 

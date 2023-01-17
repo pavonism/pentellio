@@ -9,19 +9,18 @@ import 'package:pentellio/views/page_navigator.dart';
 import 'package:pentellio/widgets/color_extensions.dart';
 import 'package:pentellio/widgets/themed_button.dart';
 
-import '../../models/chat.dart';
 import '../../models/user.dart';
 
 class DrawView extends StatefulWidget {
-  DrawView(
+  const DrawView(
       {required this.friend,
       required this.user,
       this.preview = false,
       super.key});
 
-  Friend friend;
-  PentellioUser user;
-  bool preview;
+  final Friend friend;
+  final PentellioUser user;
+  final bool preview;
 
   @override
   State<DrawView> createState() => _DrawViewState();
@@ -36,7 +35,7 @@ class _DrawViewState extends State<DrawView> with TickerProviderStateMixin {
   bool showWeightSlider = false;
   double weight = 1;
   bool isDrawing = false;
-  Tween<double> _sliderTween = Tween(begin: 0, end: 200);
+  final Tween<double> _sliderTween = Tween(begin: 0, end: 200);
 
   late final AnimationController _controller = AnimationController(
     duration: const Duration(milliseconds: 200),

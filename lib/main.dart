@@ -1,12 +1,10 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, kIsWeb, TargetPlatform;
+    show kIsWeb;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/app_settings_cubit.dart';
-import 'package:pentellio/services/chat_service.dart';
 import 'package:pentellio/services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:pentellio/services/auth_service.dart';

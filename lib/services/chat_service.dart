@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/utils/stream_subscriber_mixin.dart';
 import 'package:pentellio/models/sketch.dart';
 
 import '../models/chat.dart';
@@ -28,10 +27,9 @@ class ChatService {
   }
 
   void getUserChats() {
-    List<Chat> chats = [];
     _chats.onValue.listen((event) {
-      final _snapshot = event.snapshot;
-      for (DataSnapshot snapshot in _snapshot.children) {
+      final snapshot = event.snapshot;
+      for (DataSnapshot snapshot in snapshot.children) {
         String data = snapshot.value.toString();
         log(data);
       }

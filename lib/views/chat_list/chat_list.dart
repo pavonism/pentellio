@@ -1,33 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pentellio/cubits/auth_cubit.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
-import 'package:pentellio/models/chat.dart';
 import 'package:pentellio/models/user.dart';
-import 'package:pentellio/services/user_service.dart';
 import 'package:pentellio/views/chat/chat.dart';
-import 'package:pentellio/views/chat_list/user_tile.dart';
-import 'package:pentellio/views/chat_list/users_panel.dart';
 import 'package:pentellio/views/login/login_title.dart';
 import 'package:pentellio/views/page_navigator.dart';
 import 'package:pentellio/views/settings/settings.dart';
 import 'package:provider/provider.dart';
 
-import '../../services/chat_service.dart';
 import 'chat_tile.dart';
 
 class ChatPanelPortrait extends StatefulWidget {
-  ChatPanelPortrait({Key? key, required this.user}) : super(key: key);
+  const ChatPanelPortrait({Key? key, required this.user}) : super(key: key);
 
-  PentellioUser user;
+  final PentellioUser user;
 
   @override
   State<ChatPanelPortrait> createState() => _ChatPanelPortraitState();
 }
 
 class _ChatPanelPortraitState extends State<ChatPanelPortrait> {
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void initState() {
@@ -98,9 +91,9 @@ class _ChatPanelPortraitState extends State<ChatPanelPortrait> {
 }
 
 class ChatList extends StatelessWidget {
-  ChatList({Key? key, required this.user}) : super(key: key);
+  const ChatList({Key? key, required this.user}) : super(key: key);
 
-  PentellioUser user;
+  final PentellioUser user;
 
   @override
   Widget build(BuildContext context) {

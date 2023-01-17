@@ -1,19 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
-import 'package:pentellio/models/chat.dart';
 import 'package:pentellio/models/user.dart';
-import 'package:pentellio/services/chat_service.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
 
 class UserTile extends StatelessWidget {
-  UserTile({super.key, required this.pentellioUser});
+  const UserTile({super.key, required this.pentellioUser});
 
-  PentellioUser pentellioUser;
+  final PentellioUser pentellioUser;
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +16,6 @@ import 'package:pentellio/widgets/themed_button.dart';
 import 'package:photo_view/photo_view.dart';
 
 import '../page_navigator.dart';
-import 'package:pentellio/models/chat.dart';
 
 class ChatView extends StatefulWidget {
   const ChatView(
@@ -273,8 +271,8 @@ class _ChatViewState extends State<ChatView> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: ConstrainedBox(
-                          constraints:
-                              BoxConstraints.loose(Size(double.infinity, 200)),
+                          constraints: BoxConstraints.loose(
+                              const Size(double.infinity, 200)),
                           child: SingleChildScrollView(
                             child: TextFormField(
                               textInputAction: TextInputAction.none,

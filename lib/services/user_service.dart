@@ -1,16 +1,10 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:pentellio/models/chat.dart';
 import 'package:pentellio/models/user.dart';
 
 class UserService {
-  UserService() {}
-
   final _users = FirebaseDatabase.instance.ref('users');
 
   Future addNewUser(PentellioUser user) async {
@@ -39,8 +33,6 @@ class UserService {
   Future<PentellioUser> getUser(String userId) async {
     try {
       var data = await FirebaseDatabase.instance.ref('users/$userId').get();
-
-      var map = data.value as Map;
       return PentellioUser.fromJson(data.value!, userId: data.key!);
     } catch (e) {
       log(e.toString(), name: getUser.toString());
@@ -51,12 +43,11 @@ class UserService {
 
   StreamSubscription<DatabaseEvent>? searchStream;
 
-  void searchUsers(
-      String text, Function(List<PentellioUser>) function) async {
+  void searchUsers(String text, Function(List<PentellioUser>) function) async {
     searchStream?.cancel();
 
     try {
-      searchStream = await _users
+      searchStream = _users
           .orderByChild('username')
           .startAt(text)
           .endAt("$text\uf8ff")

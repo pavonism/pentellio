@@ -1,12 +1,11 @@
 import 'package:cross_file/cross_file.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:pentellio/models/chat.dart';
 import 'package:pentellio/models/message.dart';
 import 'package:file/file.dart';
 import 'package:file/local.dart';
+// ignore: implementation_imports
 import 'package:flutter_cache_manager/src/storage/file_system/file_system.dart'
     as c;
 import 'package:path/path.dart' as p;

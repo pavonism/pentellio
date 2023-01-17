@@ -16,7 +16,7 @@ class PentellioRegister extends StatefulWidget {
 class _PentellioRegisterState extends State<PentellioRegister> {
   final _formKey = GlobalKey<FormState>();
   final RegExp emailRegExp =
-      RegExp("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+\$)");
+      RegExp("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+\$)");
 
   @override
   Widget build(BuildContext context) {

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/services/user_service.dart';
@@ -56,7 +58,9 @@ class AuthCubit extends Cubit<AuthState> {
                 'Chosen password is too weak. \n Password must contain at least 6 characters');
           break;
       }
-    } catch (e) {}
+    } catch (e) {
+      log(e.toString());
+    }
   }
 
   Future<void> signIn({

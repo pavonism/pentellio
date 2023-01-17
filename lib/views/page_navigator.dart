@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/providers/nagivation_state.dart';
 import 'package:provider/provider.dart';
 
@@ -8,7 +7,7 @@ class PageNavigator extends StatefulWidget {
       {super.key,
       required this.child,
       this.nextPage,
-      required this.duration,
+      this.duration = const Duration(milliseconds: 200),
       this.previousPage,
       this.onPreviousPage,
       this.onNextPage});
@@ -34,11 +33,11 @@ class _PageNavigatorState extends State<PageNavigator>
     vsync: this,
   );
 
-  late final Animation<Offset> leftLeave =
-      _controller.drive(Tween(begin: Offset.zero, end: Offset(-1.0, 0.0)));
+  late final Animation<Offset> leftLeave = _controller
+      .drive(Tween(begin: Offset.zero, end: const Offset(-1.0, 0.0)));
 
   late final Animation<Offset> rightLeave =
-      _controller.drive(Tween(begin: Offset.zero, end: Offset(1.0, 0.0)));
+      _controller.drive(Tween(begin: Offset.zero, end: const Offset(1.0, 0.0)));
 
   late Animation<Offset> currentAnimation = rightLeave;
 

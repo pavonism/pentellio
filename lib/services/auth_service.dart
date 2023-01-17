@@ -1,8 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
-
-import 'package:pentellio/models/user.dart';
-import 'package:pentellio/services/user_service.dart';
 
 enum SignInResult {
   invalidEmail,
@@ -39,7 +35,7 @@ class AuthService {
     String password,
   ) async {
     try {
-      var credential = await _firebaseAuth.createUserWithEmailAndPassword(
+      await _firebaseAuth.createUserWithEmailAndPassword(
           email: email, password: password);
 
       return SignUpResult.success;

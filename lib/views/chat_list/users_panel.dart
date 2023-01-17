@@ -6,25 +6,23 @@ import 'package:pentellio/views/chat_list/chat_list.dart';
 import 'package:pentellio/views/chat_list/user_tile.dart';
 import 'package:pentellio/views/page_navigator.dart';
 
-import '../../services/user_service.dart';
-
 class UserListPanel extends StatefulWidget {
-  UserListPanel(
+  const UserListPanel(
       {super.key,
       required this.user,
       required this.foundUsers,
       required this.cubit});
 
-  PentellioUser user;
-  List<PentellioUser> foundUsers;
-  ChatCubit cubit;
+  final PentellioUser user;
+  final List<PentellioUser> foundUsers;
+  final ChatCubit cubit;
 
   @override
   State<UserListPanel> createState() => _UserListPanelState();
 }
 
 class _UserListPanelState extends State<UserListPanel> {
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void initState() {
@@ -37,7 +35,7 @@ class _UserListPanelState extends State<UserListPanel> {
   @override
   Widget build(BuildContext context) {
     return PageNavigator(
-      duration: Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 200),
       previousPage: ChatPanelPortrait(user: widget.user),
       onPreviousPage: context.read<ChatCubit>().showChatList,
       child: Scaffold(

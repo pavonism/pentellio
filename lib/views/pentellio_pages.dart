@@ -1,29 +1,25 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/auth_cubit.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
-import 'package:pentellio/models/chat.dart';
 import 'package:pentellio/providers/nagivation_state.dart';
 import 'package:pentellio/services/chat_service.dart';
 import 'package:pentellio/services/image_service.dart';
-import 'package:pentellio/services/user_service.dart';
 import 'package:pentellio/views/chat/chat.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
 import 'package:pentellio/views/settings/settings.dart';
 import 'package:pentellio/widgets/app_state_observer.dart';
 import 'package:provider/provider.dart';
-import 'package:universal_html/html.dart';
 
 import 'chat_list/chat_list.dart';
 import 'chat_list/users_panel.dart';
 import 'loading_screen.dart';
 
 class PentellionPages extends StatelessWidget {
-  PentellionPages({super.key, required this.signedInState});
+  const PentellionPages({super.key, required this.signedInState});
 
-  SignedInState signedInState;
+  final SignedInState signedInState;
 
   @override
   Widget build(BuildContext context) {
@@ -104,9 +100,9 @@ class PentellioPagesPortrait extends StatelessWidget {
 }
 
 class PentellioPagesLandscape extends StatelessWidget {
-  PentellioPagesLandscape({super.key, required this.constraints});
+  const PentellioPagesLandscape({super.key, required this.constraints});
 
-  BoxConstraints constraints;
+  final BoxConstraints constraints;
 
   @override
   Widget build(BuildContext context) {

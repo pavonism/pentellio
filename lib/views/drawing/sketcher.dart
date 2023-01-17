@@ -1,17 +1,11 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubits/chat_cubit.dart';
-import '../../models/chat.dart';
 import '../../models/sketch.dart';
-import '../../models/user.dart';
-import '../chat/chat.dart';
-import '../page_navigator.dart';
 import 'painter.dart';
 
 class Sketcher extends StatefulWidget {
-  Sketcher(
+  const Sketcher(
       {required this.color,
       required this.chatCubit,
       this.sketches = const [],
@@ -20,15 +14,15 @@ class Sketcher extends StatefulWidget {
       this.readOnly = false,
       super.key});
 
-  Color color;
-  ChatCubit chatCubit;
-  var sketches = <Sketch>[];
-  double compression;
-  double weight;
-  bool readOnly;
+  final Color color;
+  final ChatCubit chatCubit;
+  final List<Sketch> sketches;
+  final double compression;
+  final double weight;
+  final bool readOnly;
 
   @override
-  _SketcherState createState() => _SketcherState();
+  State<Sketcher> createState() => _SketcherState();
 }
 
 class _SketcherState extends State<Sketcher> {
@@ -47,7 +41,6 @@ class _SketcherState extends State<Sketcher> {
   }
 
   void panStart(DragStartDetails details) {
-    print("drawing started");
     final box = context.findRenderObject() as RenderBox;
     final point = box.globalToLocal(details.globalPosition);
 
@@ -61,19 +54,11 @@ class _SketcherState extends State<Sketcher> {
     final box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
 
-    // if (point.dy < -3) {
-    //   sketchStreamControler.add(sketches);
-    //   return;
-    // }
-
     sketches.last.path.add(point);
     lineStreamControler.add(sketches.last);
-
-    print(point);
   }
 
   void panDown(DragDownDetails details) {
-    print("drawing ended");
     sketchStreamControler.add(sketches);
   }
 
@@ -116,7 +101,7 @@ class _SketcherState extends State<Sketcher> {
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           color: Colors.transparent,
-          padding: EdgeInsets.all(4.0),
+          padding: const EdgeInsets.all(4.0),
           alignment: Alignment.topLeft,
           child: StreamBuilder(
               stream: sketchStreamControler.stream,
@@ -136,7 +121,7 @@ class _SketcherState extends State<Sketcher> {
             child: Container(
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          padding: EdgeInsets.all(4.0),
+          padding: const EdgeInsets.all(4.0),
           alignment: Alignment.topLeft,
           color: Colors.transparent,
           child: StreamBuilder<Sketch>(
