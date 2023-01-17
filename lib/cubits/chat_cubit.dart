@@ -42,7 +42,9 @@ class DrawingChatState extends ChatState {
 }
 
 class SettingsState extends UserState {
-  SettingsState({required super.currentUser});
+  SettingsState({required super.currentUser, this.openedChat});
+
+  final Friend? openedChat;
 }
 
 class ChatCubit extends Cubit<EmptyState> {
@@ -140,10 +142,10 @@ class ChatCubit extends Cubit<EmptyState> {
     await Future.wait(futures);
   }
 
-  void sendMessage(String msg) async {
+  Future sendMessage(String msg) async {
     if (openedChat != null) {
       try {
-        chatService.sendMessage(
+        await chatService.sendMessage(
             openedChat!.chatId,
             Message(
                 content: msg,
@@ -233,11 +235,15 @@ class ChatCubit extends Cubit<EmptyState> {
   }
 
   void viewSettings() {
-    emit(SettingsState(currentUser: currentUser));
+    emit(SettingsState(currentUser: currentUser, openedChat: openedChat));
   }
 
   void showChatList() {
-    emit(UserState(currentUser: currentUser));
+    if (openedChat != null) {
+      emit(ChatOpenedState(currentUser: currentUser, openedChat: openedChat!));
+    } else {
+      emit(UserState(currentUser: currentUser));
+    }
   }
 
   void changeProfilePicture(XFile image) async {

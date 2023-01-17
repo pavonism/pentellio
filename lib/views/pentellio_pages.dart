@@ -50,7 +50,7 @@ class PentellionPages extends StatelessWidget {
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   return constraints.maxWidth < 600
-                      ? PentellioPagesPortrait()
+                      ? const PentellioPagesPortrait()
                       : PentellioPagesLandscape(
                           constraints: constraints,
                         );
@@ -116,8 +116,11 @@ class PentellioPagesLandscape extends StatelessWidget {
             decoration: BoxDecoration(border: Border.all(color: Colors.black)),
             child: BlocBuilder<ChatCubit, EmptyState>(
               builder: (context, state) {
+                if (state is SettingsState) {
+                  return SettingsView(user: state.currentUser);
+                }
                 if (state is DrawingChatState) {
-                  return DrawView(
+                  return ChatView(
                     user: state.currentUser,
                     friend: state.openedChat,
                   );
@@ -141,16 +144,28 @@ class PentellioPagesLandscape extends StatelessWidget {
         Expanded(
           child: BlocBuilder<ChatCubit, EmptyState>(
             builder: (context, state) {
-              if (state is ChatOpenedState) {
-                return ChatView(
+              if (state is DrawingChatState) {
+                return DrawView(
+                  user: state.currentUser,
                   friend: state.openedChat,
+                );
+              } else if (state is ChatOpenedState) {
+                return ChatView(
+                  key: ValueKey(state.openedChat.chatId),
+                  landscapeMode: true,
+                  friend: state.openedChat,
+                  user: state.currentUser,
+                );
+              } else if (state is SettingsState && state.openedChat != null) {
+                return ChatView(
+                  key: ValueKey(state.openedChat!.chatId),
+                  landscapeMode: true,
+                  friend: state.openedChat!,
                   user: state.currentUser,
                 );
               }
 
-              return Scaffold(
-                backgroundColor: Color(0xFF191C1F),
-              );
+              return const Scaffold();
             },
           ),
         )

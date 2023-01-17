@@ -42,11 +42,13 @@ class _UserListPanelState extends State<UserListPanel> {
             child: Row(
               children: [
                 IconButton(
-                    onPressed: () {
-                      context.read<ChatCubit>().showChatList();
-                    },
-                    icon: Icon(Icons.arrow_back)),
-                SizedBox(
+                  onPressed: () {
+                    context.read<ChatCubit>().showChatList();
+                  },
+                  icon: const Icon(Icons.arrow_back),
+                  splashRadius: 20,
+                ),
+                const SizedBox(
                   width: 16,
                 ),
                 Expanded(

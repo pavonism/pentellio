@@ -18,10 +18,15 @@ import '../page_navigator.dart';
 import 'package:pentellio/models/chat.dart';
 
 class ChatView extends StatefulWidget {
-  const ChatView({super.key, required this.friend, required this.user});
+  const ChatView(
+      {super.key,
+      required this.friend,
+      required this.user,
+      this.landscapeMode = false});
 
   final PentellioUser user;
   final Friend friend;
+  final bool landscapeMode;
 
   @override
   State<ChatView> createState() => _ChatViewState();
@@ -30,21 +35,16 @@ class ChatView extends StatefulWidget {
 class _ChatViewState extends State<ChatView> {
   final messageController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
-  List<Message> msgs = [];
 
-  void sendMessage(BuildContext context) {
-    context.read<ChatCubit>().sendMessage(messageController.text);
+  void trySendMessage(BuildContext context) async {
+    if (messageController.text.trim().isEmpty) return;
+    await context.read<ChatCubit>().sendMessage(messageController.text);
     messageController.clear();
   }
 
   @override
-  void initState() {
-    super.initState();
-    msgs = widget.friend.chat.messages.reversed.toList();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    var msgs = widget.friend.chat.messages.reversed.toList();
     var title = widget.friend.chat.userIdToUsername.length == 1
         ? widget.user.username
         : widget.friend.chat.userIdToUsername.entries
@@ -52,14 +52,17 @@ class _ChatViewState extends State<ChatView> {
             .value;
 
     return PageNavigator(
-      onPreviousPage: () => context.read<ChatCubit>().closeChat(),
-      previousPage: ChatPanelPortrait(
-        user: widget.user,
-      ),
+      onPreviousPage: context.read<ChatCubit>().closeChat,
+      previousPage: !widget.landscapeMode
+          ? ChatPanelPortrait(
+              user: widget.user,
+            )
+          : const Scaffold(),
       duration: const Duration(milliseconds: 200),
       nextPage: DrawView(
         user: widget.user,
         friend: widget.friend,
+        preview: true,
       ),
       onNextPage: context.read<ChatCubit>().openDrawStream,
       child: Scaffold(
@@ -72,9 +75,11 @@ class _ChatViewState extends State<ChatView> {
           title: Row(
             children: [
               IconButton(
-                iconSize: 20,
+                onPressed: () {
+                  context.read<ChatCubit>().closeChat();
+                },
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => context.read<ChatCubit>().closeChat(),
+                splashRadius: 20,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -138,7 +143,8 @@ class _ChatViewState extends State<ChatView> {
                       child: LayoutBuilder(
                         builder: (context, constraints) {
                           return ListView.builder(
-                            key: PageStorageKey<String>(widget.friend.chatId),
+                            key: PageStorageKey<String>(
+                                widget.friend.chat.chatId),
                             reverse: true,
                             itemCount: msgs.length,
                             itemBuilder: (context, index) {
@@ -212,7 +218,7 @@ class _ChatViewState extends State<ChatView> {
                         width: 50,
                         child: IconButton(
                           onPressed: () {
-                            sendMessage(context);
+                            trySendMessage(context);
                           },
                           splashRadius: 25,
                           icon: const Icon(

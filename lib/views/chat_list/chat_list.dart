@@ -107,12 +107,13 @@ class ChatList extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () async {},
       child: ListView.builder(
-          itemCount: user.friends.length,
-          itemBuilder: ((context, index) {
-            return ChatTile(
-              friend: user.friends[index],
-            );
-          })),
+        itemCount: user.friends.length,
+        itemBuilder: ((context, index) {
+          return ChatTile(
+            friend: user.friends[index],
+          );
+        }),
+      ),
     );
   }
 }

@@ -61,10 +61,10 @@ class _SketcherState extends State<Sketcher> {
     final box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
 
-    if (point.dy < -3) {
-      sketchStreamControler.add(sketches);
-      return;
-    }
+    // if (point.dy < -3) {
+    //   sketchStreamControler.add(sketches);
+    //   return;
+    // }
 
     sketches.last.path.add(point);
     lineStreamControler.add(sketches.last);

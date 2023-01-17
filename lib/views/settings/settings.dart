@@ -69,10 +69,15 @@ class _SettingsViewState extends State<SettingsView> {
                                 ),
                             imageUrl: widget.user.profilePictureUrl),
                       )
-                    : const ColoredBox(color: Colors.blue),
+                    : ColoredBox(color: Theme.of(context).indicatorColor),
               ),
               if (_imageHover)
-                Center(child: Icon(size: profilePictureSize * 0.3, Icons.image))
+                Center(
+                    child: Icon(
+                  size: profilePictureSize * 0.3,
+                  Icons.image,
+                  color: Colors.white,
+                ))
             ],
           ),
         ),
@@ -280,6 +285,28 @@ class _SettingsViewState extends State<SettingsView> {
     });
   }
 
+  PreferredSizeWidget buildAppBar(BuildContext context) {
+    return AppBar(
+      titleSpacing: 0,
+      title: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(children: [
+          IconButton(
+            onPressed: () {
+              context.read<ChatCubit>().showChatList();
+            },
+            icon: const Icon(Icons.arrow_back),
+            splashRadius: 20,
+          ),
+          const SizedBox(
+            width: 5,
+          ),
+          const Text("Settings"),
+        ]),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!initialized) {
@@ -295,25 +322,7 @@ class _SettingsViewState extends State<SettingsView> {
       nextPage: ChatPanelPortrait(user: widget.user),
       onNextPage: context.read<ChatCubit>().showChatList,
       child: Scaffold(
-        appBar: AppBar(
-          titleSpacing: 0,
-          title: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(children: [
-              IconButton(
-                onPressed: () {
-                  context.read<ChatCubit>().showChatList();
-                },
-                icon: const Icon(Icons.arrow_back),
-                splashRadius: 20,
-              ),
-              const SizedBox(
-                width: 5,
-              ),
-              const Text("Settings"),
-            ]),
-          ),
-        ),
+        appBar: buildAppBar(context),
         body: Padding(
           padding: const EdgeInsets.all(32.0),
           child: DefaultTextStyle(

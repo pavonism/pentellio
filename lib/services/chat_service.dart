@@ -21,10 +21,10 @@ class ChatService {
     return newMessageEntry.key!;
   }
 
-  void sendMessage(String chatId, Message msg, {String? msgId}) {
+  Future sendMessage(String chatId, Message msg, {String? msgId}) async {
     var ref = _chats.child("$chatId/messages");
     var newMessage = msgId != null ? ref.child(msgId) : ref.push();
-    newMessage.set(msg.toJson());
+    await newMessage.set(msg.toJson());
   }
 
   void GetUserChats() {

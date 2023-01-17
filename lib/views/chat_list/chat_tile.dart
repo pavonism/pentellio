@@ -42,8 +42,8 @@ class ChatTile extends StatelessWidget {
                             const CircularProgressIndicator(),
                         imageUrl: friend.user.profilePictureUrl,
                       )
-                    : const ColoredBox(
-                        color: Colors.blue,
+                    : ColoredBox(
+                        color: Theme.of(context).indicatorColor,
                       ),
               ),
               const SizedBox(
