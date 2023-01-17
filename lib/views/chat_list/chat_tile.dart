@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
 import 'package:pentellio/models/user.dart';
-import 'package:pentellio/widgets/date_time_extensions.dart';
+import 'package:pentellio/utilities/date_time_extensions.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
 
 class ChatTile extends StatelessWidget {

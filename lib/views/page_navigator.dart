@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:pentellio/providers/nagivation_state.dart';
 import 'package:provider/provider.dart';
+
+class NagivationState {
+  NagivationState(this.lock);
+  final bool lock;
+}
 
 class PageNavigator extends StatefulWidget {
   const PageNavigator(

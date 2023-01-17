@@ -10,7 +10,7 @@ import 'package:pentellio/models/message.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/views/chat_list/chat_list.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
-import 'package:pentellio/widgets/date_time_extensions.dart';
+import 'package:pentellio/utilities/date_time_extensions.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
 import 'package:pentellio/widgets/themed_button.dart';
 import 'package:photo_view/photo_view.dart';

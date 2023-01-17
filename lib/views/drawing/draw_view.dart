@@ -6,7 +6,7 @@ import 'package:pentellio/cubits/chat_cubit.dart';
 import 'package:pentellio/views/chat/chat.dart';
 import 'package:pentellio/views/drawing/sketcher.dart';
 import 'package:pentellio/views/page_navigator.dart';
-import 'package:pentellio/widgets/color_extensions.dart';
+import 'package:pentellio/utilities/color_extensions.dart';
 import 'package:pentellio/widgets/themed_button.dart';
 
 import '../../models/user.dart';
