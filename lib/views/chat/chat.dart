@@ -180,6 +180,7 @@ class _ChatViewState extends State<ChatView> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       if (!kIsWeb)
                         IconButton(
@@ -203,14 +204,20 @@ class _ChatViewState extends State<ChatView> {
                           icon: const Icon(Icons.photo)),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: TextFormField(
-                          textInputAction: TextInputAction.none,
-                          controller: messageController,
-                          maxLines: null,
-                          keyboardType: TextInputType.multiline,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Write a message...',
+                        child: ConstrainedBox(
+                          constraints:
+                              BoxConstraints.loose(Size(double.infinity, 200)),
+                          child: SingleChildScrollView(
+                            child: TextFormField(
+                              textInputAction: TextInputAction.none,
+                              controller: messageController,
+                              maxLines: null,
+                              keyboardType: TextInputType.multiline,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                hintText: 'Write a message...',
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -340,6 +347,8 @@ class MessageTile extends StatelessWidget {
                         ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Flexible(
                           child: Text(
@@ -350,12 +359,9 @@ class MessageTile extends StatelessWidget {
                         const SizedBox(
                           width: 16,
                         ),
-                        Align(
-                          alignment: Alignment.bottomLeft,
-                          child: Text(
-                            message.sentTime.time(),
-                            textScaleFactor: 0.65,
-                          ),
+                        Text(
+                          message.sentTime.time(),
+                          textScaleFactor: 0.65,
                         )
                       ],
                     )
