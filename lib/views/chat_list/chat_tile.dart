@@ -96,20 +96,22 @@ class ChatTile extends StatelessWidget {
                                   const SizedBox(
                                     width: 4,
                                   ),
-                                Text(
-                                    friend.chat.messages.isNotEmpty
-                                        ? friend.chat.messages.last.content
-                                        : "",
-                                    textAlign: TextAlign.left,
-                                    textScaleFactor: 0.8,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .caption
-                                          ?.color,
-                                    )),
+                                Flexible(
+                                  child: Text(
+                                      friend.chat.messages.isNotEmpty
+                                          ? friend.chat.messages.last.content
+                                          : "",
+                                      textAlign: TextAlign.left,
+                                      textScaleFactor: 0.8,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .caption
+                                            ?.color,
+                                      )),
+                                ),
                               ])
                             : const Text(""),
                       )

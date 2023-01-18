@@ -92,6 +92,8 @@ class ChatCubit extends Cubit<EmptyState> {
 
     if (openedChat != null) {
       emit(ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
+    } else if (super.state is UserState) {
+      emit(UserState(currentUser: currentUser));
     }
   }
 
