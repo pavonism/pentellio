@@ -298,7 +298,7 @@ class _DrawViewState extends State<DrawView> with TickerProviderStateMixin {
                     friend: widget.friend,
                     user: widget.user,
                   )
-                : Container(),
+                : const Scaffold(),
             onPreviousPage: context.read<ChatCubit>().closeDrawStream,
             duration: const Duration(milliseconds: 200),
             child: _buildDrawArea(context),

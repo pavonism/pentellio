@@ -126,6 +126,7 @@ class PentellioPagesLandscape extends StatelessWidget {
                   );
                 } else if (state is ChatOpenedState) {
                   return ChatListView(
+                    landscapeMode: true,
                     user: state.currentUser,
                   );
                 } else if (state is SearchingUsersState) {
@@ -136,6 +137,7 @@ class PentellioPagesLandscape extends StatelessWidget {
                   );
                 } else if (state is UserState) {
                   return ChatListView(
+                    landscapeMode: true,
                     user: state.currentUser,
                   );
                 }

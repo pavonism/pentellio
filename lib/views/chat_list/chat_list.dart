@@ -11,9 +11,11 @@ import 'package:provider/provider.dart';
 import 'chat_tile.dart';
 
 class ChatListView extends StatefulWidget {
-  const ChatListView({Key? key, required this.user}) : super(key: key);
+  const ChatListView({Key? key, required this.user, this.landscapeMode = false})
+      : super(key: key);
 
   final PentellioUser user;
+  final bool landscapeMode;
 
   @override
   State<ChatListView> createState() => _ChatListViewState();
@@ -60,7 +62,8 @@ class _ChatListViewState extends State<ChatListView> {
   Widget _buildNavigation(
       {required BuildContext context, required Widget child}) {
     return PageNavigator(
-      nextPage: context.read<ChatCubit>().lastOpenedChat != null
+      nextPage: context.read<ChatCubit>().lastOpenedChat != null &&
+              !widget.landscapeMode
           ? ChatView(
               friend: context.read<ChatCubit>().lastOpenedChat!,
               user: widget.user)
