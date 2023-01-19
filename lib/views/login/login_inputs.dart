@@ -56,7 +56,7 @@ class _PentellioLoginInputsState extends State<PentellioLoginInputs> {
         children: [
           if (state is SignedOutState && state.error != null)
             Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               child: Text(
                 "${state.error!}!",
                 style: TextStyle(

@@ -77,7 +77,8 @@ class ChatService {
     });
   }
 
-  void listenSketches(Chat chat, Function(Sketch) onNewSketch, Function onSketchRemoved) {
+  void listenSketches(
+      Chat chat, Function(Sketch) onNewSketch, Function onSketchRemoved) {
     _sketchSubscription = _chats
         .child(chat.chatId)
         .child('sketches')
@@ -93,7 +94,7 @@ class ChatService {
       }
     });
 
-        _sketchSubscriptionRemoved = _chats
+    _sketchSubscriptionRemoved = _chats
         .child(chat.chatId)
         .child('sketches')
         .onChildRemoved
@@ -110,6 +111,7 @@ class ChatService {
 
   void closeSketchSubscription(Chat chat) async {
     await _sketchSubscription?.cancel();
+    await _sketchSubscriptionRemoved?.cancel();
   }
 
   void addSketch(Chat chat, Sketch sketch) async {

@@ -7,7 +7,6 @@ import 'package:pentellio/models/sketch.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/services/chat_service.dart';
 import 'package:pentellio/services/image_service.dart';
-import 'package:pentellio/views/chat_list/chat_list.dart';
 import '../services/user_service.dart';
 
 class ChatCubit extends Cubit<EmptyState> {
