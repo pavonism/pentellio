@@ -28,13 +28,21 @@ class _SettingsViewState extends State<SettingsView> {
   bool _darkTheme = true;
   bool _imageHover = false;
   final ImagePicker _imagePicker = ImagePicker();
-  bool initialized = false;
   double _compressionRatio = 0.25;
   double _fontSize = 11;
 
+  @override
+  void initState() {
+    super.initState();
+    var appSettings = context.read<AppSettingsCubit>();
+
+    _darkTheme = appSettings.darkTheme;
+    _compressionRatio = appSettings.getCompressionRatio();
+    _fontSize = appSettings.getFontSize();
+  }
+
   Widget _buildProfilePicture(BuildContext context, double profilePictureSize) {
     var chatCubit = context.read<ChatCubit>();
-    initialized = true;
     return ClipRRect(
       borderRadius: BorderRadius.all(Radius.circular(profilePictureSize * 0.2)),
       child: InkWell(
@@ -282,7 +290,7 @@ class _SettingsViewState extends State<SettingsView> {
     });
   }
 
-  PreferredSizeWidget buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       titleSpacing: 0,
       title: Padding(
@@ -304,22 +312,20 @@ class _SettingsViewState extends State<SettingsView> {
     );
   }
 
+  Widget _buildNavigation(
+      {required BuildContext context, required Widget child}) {
+    return PageNavigator(
+        nextPage: ChatListView(user: widget.user),
+        onNextPage: context.read<ChatCubit>().showChatList,
+        child: child);
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (!initialized) {
-      var appSettings = context.read<AppSettingsCubit>();
-
-      _darkTheme = appSettings.darkTheme;
-      _compressionRatio = appSettings.getCompressionRatio();
-      _fontSize = appSettings.getFontSize();
-    }
-
-    return PageNavigator(
-      duration: const Duration(milliseconds: 200),
-      nextPage: ChatPanelPortrait(user: widget.user),
-      onNextPage: context.read<ChatCubit>().showChatList,
+    return _buildNavigation(
+      context: context,
       child: Scaffold(
-        appBar: buildAppBar(context),
+        appBar: _buildAppBar(context),
         body: Padding(
           padding: const EdgeInsets.all(32.0),
           child: DefaultTextStyle(

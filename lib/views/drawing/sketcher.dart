@@ -35,12 +35,12 @@ class _SketcherState extends State<Sketcher> {
   late double maxWidth;
 
   @override
-  void initState() {
+  initState() {
     super.initState();
-    updateSketchStream();
+    _updateSketchStream();
   }
 
-  void panStart(DragStartDetails details) {
+  _panStart(DragStartDetails details) {
     final box = context.findRenderObject() as RenderBox;
     final point = box.globalToLocal(details.globalPosition);
 
@@ -50,7 +50,7 @@ class _SketcherState extends State<Sketcher> {
     lineStreamControler.add(sketches.last);
   }
 
-  void panUpdate(DragUpdateDetails details) {
+  _panUpdate(DragUpdateDetails details) {
     final box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
 
@@ -58,11 +58,11 @@ class _SketcherState extends State<Sketcher> {
     lineStreamControler.add(sketches.last);
   }
 
-  void panDown(DragDownDetails details) {
+  _panDown(DragDownDetails details) {
     sketchStreamControler.add(sketches);
   }
 
-  void panEnd(DragEndDetails details) {
+  _panEnd(DragEndDetails details) {
     var sketch = sketches.last;
     List<Offset> newPoints = [sketch.path.first];
     int step = widget.compression == 0
@@ -85,7 +85,7 @@ class _SketcherState extends State<Sketcher> {
     sketches.remove(sketch);
   }
 
-  void updateSketchStream() {
+  _updateSketchStream() {
     sketches = widget.sketches;
 
     if (sketches.isEmpty) {
@@ -94,7 +94,7 @@ class _SketcherState extends State<Sketcher> {
     }
   }
 
-  Widget buildSketch(BuildContext context) {
+  Widget _buildSketch(BuildContext context) {
     return RepaintBoundary(
       child: Container(
           key: _globalKey,
@@ -111,12 +111,12 @@ class _SketcherState extends State<Sketcher> {
     );
   }
 
-  Widget buildLine(BuildContext context) {
+  Widget _buildLine(BuildContext context) {
     return GestureDetector(
-        onPanStart: panStart,
-        onPanUpdate: panUpdate,
-        onPanDown: panDown,
-        onPanEnd: panEnd,
+        onPanStart: _panStart,
+        onPanUpdate: _panUpdate,
+        onPanDown: _panDown,
+        onPanEnd: _panEnd,
         child: RepaintBoundary(
             child: Container(
           width: MediaQuery.of(context).size.width,
@@ -127,7 +127,9 @@ class _SketcherState extends State<Sketcher> {
           child: StreamBuilder<Sketch>(
               stream: lineStreamControler.stream,
               builder: (context, snapshot) {
-                return CustomPaint(painter: Brush(sketches: [sketches.last]));
+                return sketches.isNotEmpty
+                    ? CustomPaint(painter: Brush(sketches: [sketches.last]))
+                    : Container();
               }),
         )));
   }
@@ -140,8 +142,8 @@ class _SketcherState extends State<Sketcher> {
     return Scaffold(
         body: Stack(
       children: [
-        buildSketch(context),
-        if (!widget.readOnly) buildLine(context)
+        _buildSketch(context),
+        if (!widget.readOnly) _buildLine(context)
       ],
     ));
   }

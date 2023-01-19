@@ -10,31 +10,56 @@ import 'package:provider/provider.dart';
 
 import 'chat_tile.dart';
 
-class ChatPanelPortrait extends StatefulWidget {
-  const ChatPanelPortrait({Key? key, required this.user}) : super(key: key);
+class ChatListView extends StatefulWidget {
+  const ChatListView({Key? key, required this.user}) : super(key: key);
 
   final PentellioUser user;
 
   @override
-  State<ChatPanelPortrait> createState() => _ChatPanelPortraitState();
+  State<ChatListView> createState() => _ChatListViewState();
 }
 
-class _ChatPanelPortraitState extends State<ChatPanelPortrait> {
-  final TextEditingController _controller = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller.addListener(() {
-      setState(() {});
-    });
+class _ChatListViewState extends State<ChatListView> {
+  PreferredSizeWidget _buildAppbar(BuildContext context) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      titleSpacing: 0,
+      title: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+        const SizedBox(
+          width: 4,
+        ),
+        IconButton(
+            onPressed: () {
+              context.read<ChatCubit>().viewSettings();
+            },
+            icon: const Icon(Icons.menu)),
+        const SizedBox(
+          width: 4,
+        ),
+        Expanded(
+            child: Align(
+          alignment: Alignment.centerLeft,
+          child: PentellioText(
+            fontSize:
+                Theme.of(context).appBarTheme.titleTextStyle?.fontSize ?? 40,
+            text: "Pentellio",
+            animate: false,
+          ),
+        )),
+        IconButton(
+          onPressed: () {
+            context.read<ChatCubit>().startSearchingUsers();
+          },
+          icon: const Icon(Icons.search),
+          splashRadius: 25,
+        ),
+      ]),
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildNavigation(
+      {required BuildContext context, required Widget child}) {
     return PageNavigator(
-      duration: const Duration(milliseconds: 200),
       nextPage: context.read<ChatCubit>().lastOpenedChat != null
           ? ChatView(
               friend: context.read<ChatCubit>().lastOpenedChat!,
@@ -46,43 +71,17 @@ class _ChatPanelPortraitState extends State<ChatPanelPortrait> {
         preview: true,
       ),
       onPreviousPage: context.read<ChatCubit>().viewSettings,
+      child: child,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildNavigation(
+      context: context,
       child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          titleSpacing: 0,
-          title: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            const SizedBox(
-              width: 4,
-            ),
-            IconButton(
-                onPressed: () {
-                  context.read<ChatCubit>().viewSettings();
-                },
-                icon: const Icon(Icons.menu)),
-            const SizedBox(
-              width: 4,
-            ),
-            Expanded(
-                child: Align(
-              alignment: Alignment.centerLeft,
-              child: PentellioText(
-                fontSize:
-                    Theme.of(context).appBarTheme.titleTextStyle?.fontSize ??
-                        40,
-                text: "Pentellio",
-                animate: false,
-              ),
-            )),
-            IconButton(
-              onPressed: () {
-                context.read<ChatCubit>().startSearchingUsers();
-              },
-              icon: const Icon(Icons.search),
-              splashRadius: 25,
-            ),
-          ]),
-        ),
-        body: ChatList(
+        appBar: _buildAppbar(context),
+        body: _ChatList(
           user: widget.user,
         ),
       ),
@@ -90,8 +89,8 @@ class _ChatPanelPortraitState extends State<ChatPanelPortrait> {
   }
 }
 
-class ChatList extends StatelessWidget {
-  const ChatList({Key? key, required this.user}) : super(key: key);
+class _ChatList extends StatelessWidget {
+  const _ChatList({Key? key, required this.user}) : super(key: key);
 
   final PentellioUser user;
 

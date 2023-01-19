@@ -11,8 +11,8 @@ import '../models/user.dart';
 class ChatService {
   ChatService();
   final _chats = FirebaseDatabase.instance.ref("chats");
-  StreamSubscription<DatabaseEvent>? subscription;
   StreamSubscription<DatabaseEvent>? _sketchSubscription;
+  StreamSubscription<DatabaseEvent>? _sketchSubscriptionRemoved;
 
   String createMessageEntry(String chatId) {
     var ref = _chats.child("$chatId/messages");
@@ -61,7 +61,7 @@ class ChatService {
   void listenChat(Chat chat, Function(Message) onNewMessages) {
     var chatId = chat.chatId;
     log("new subscription on${chat.chatId}");
-    subscription = _chats
+    _chats
         .child("$chatId/messages")
         .orderByChild('sentTime')
         .onChildAdded
@@ -77,11 +77,7 @@ class ChatService {
     });
   }
 
-  void closeChatUpdates() async {
-    await subscription?.cancel();
-  }
-
-  void listenSketches(Chat chat, Function(Sketch) onNewSketch) {
+  void listenSketches(Chat chat, Function(Sketch) onNewSketch, Function onSketchRemoved) {
     _sketchSubscription = _chats
         .child(chat.chatId)
         .child('sketches')
@@ -91,6 +87,20 @@ class ChatService {
         try {
           var sketch = Sketch.fromJson(event.snapshot.value as Map);
           onNewSketch(sketch);
+        } catch (e) {
+          log(e.toString(), time: DateTime.now());
+        }
+      }
+    });
+
+        _sketchSubscriptionRemoved = _chats
+        .child(chat.chatId)
+        .child('sketches')
+        .onChildRemoved
+        .listen((event) {
+      if (event.snapshot.value != null) {
+        try {
+          onSketchRemoved();
         } catch (e) {
           log(e.toString(), time: DateTime.now());
         }

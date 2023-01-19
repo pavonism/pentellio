@@ -22,10 +22,7 @@ class UserTile extends StatelessWidget {
         constraints: BoxConstraints.tight(const Size(double.infinity, 70)),
         child: Container(
           decoration: BoxDecoration(
-              border: Border.all(
-                  color: Colors.black,
-                  strokeAlign: StrokeAlign.center,
-                  width: 0.05)),
+              border: Border.all(strokeAlign: StrokeAlign.center, width: 0.05)),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: Row(

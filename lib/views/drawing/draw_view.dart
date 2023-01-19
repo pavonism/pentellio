@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:pentellio/cubits/app_settings_cubit.dart';
@@ -16,11 +17,13 @@ class DrawView extends StatefulWidget {
       {required this.friend,
       required this.user,
       this.preview = false,
+      this.landscapeMode = false,
       super.key});
 
   final Friend friend;
   final PentellioUser user;
   final bool preview;
+  final bool landscapeMode;
 
   @override
   State<DrawView> createState() => _DrawViewState();
@@ -56,12 +59,13 @@ class _DrawViewState extends State<DrawView> with TickerProviderStateMixin {
 
   @override
   void initState() {
+    super.initState();
     _buttonsAnimation =
         CurvedAnimation(parent: _controller, curve: Curves.bounceInOut);
 
     _sliderAnimation = CurvedAnimation(
         parent: _sliderAnimationController, curve: Curves.easeOutBack);
-    super.initState();
+    _compressionRatio = context.read<AppSettingsCubit>().getCompressionRatio();
   }
 
   @override
@@ -70,7 +74,7 @@ class _DrawViewState extends State<DrawView> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  Widget buildColorPickerDialog(BuildContext context) {
+  Widget _buildColorPickerDialog(BuildContext context) {
     return AlertDialog(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(50))),
@@ -106,6 +110,56 @@ class _DrawViewState extends State<DrawView> with TickerProviderStateMixin {
   }
 
   Tween<double>? _tween;
+
+  Widget _drawSlider(BuildContext context) {
+    return SizedBox(
+      width: 50,
+      child: SizedBox(
+        height: _sliderTween.evaluate(_sliderAnimation),
+        child: SfSlider.vertical(
+            inactiveColor: Theme.of(context).primaryColor,
+            activeColor: Theme.of(context).indicatorColor,
+            min: 1,
+            max: 50,
+            value: weight,
+            onChanged: (value) {
+              setState(() {
+                weight = value;
+              });
+            }),
+      ),
+    );
+  }
+
+  Widget _drawPenWeightButton(BuildContext context) {
+    return FloatingActionButton(
+      mini: true,
+      foregroundColor: _fontColor,
+      backgroundColor:
+          showWeightSlider ? Theme.of(context).indicatorColor : null,
+      onPressed: () {
+        if (!showWeightSlider) {
+          _sliderAnimationController.forward();
+          setState(() {
+            showWeightSlider = true;
+          });
+        } else {
+          _sliderAnimationController.reverse().whenComplete(
+                () => setState(() {
+                  showWeightSlider = false;
+                }),
+              );
+        }
+      },
+      child: showWeightSlider
+          ? Text(
+              weight.toStringAsFixed(1),
+              style: TextStyle(
+                  color: Theme.of(context).indicatorColor.getForegroundColor()),
+            )
+          : const Icon(Icons.line_weight),
+    );
+  }
 
   Widget _drawButtons(BuildContext context) {
     return Column(
@@ -147,63 +201,8 @@ class _DrawViewState extends State<DrawView> with TickerProviderStateMixin {
                                 height: 16,
                               ),
                               if (isDrawing && showWeightSlider)
-                                SizedBox(
-                                  width: 50,
-                                  child: RotatedBox(
-                                    quarterTurns: 3,
-                                    child: SizedBox(
-                                      width: _sliderTween
-                                          .evaluate(_sliderAnimation),
-                                      child: Slider(
-                                          label: weight.toStringAsFixed(2),
-                                          inactiveColor:
-                                              Theme.of(context).primaryColor,
-                                          activeColor:
-                                              Theme.of(context).indicatorColor,
-                                          min: 1,
-                                          max: 50,
-                                          value: weight,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              weight = value;
-                                            });
-                                          }),
-                                    ),
-                                  ),
-                                ),
-                              if (isDrawing)
-                                FloatingActionButton(
-                                  mini: true,
-                                  foregroundColor: _fontColor,
-                                  backgroundColor: showWeightSlider
-                                      ? Theme.of(context).indicatorColor
-                                      : null,
-                                  onPressed: () {
-                                    if (!showWeightSlider) {
-                                      _sliderAnimationController.forward();
-                                      setState(() {
-                                        showWeightSlider = true;
-                                      });
-                                    } else {
-                                      _sliderAnimationController
-                                          .reverse()
-                                          .whenComplete(
-                                            () => setState(() {
-                                              showWeightSlider = false;
-                                            }),
-                                          );
-                                    }
-                                  },
-                                  child: showWeightSlider
-                                      ? Text(
-                                          weight.toStringAsFixed(1),
-                                          style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .indicatorColor
-                                                  .getForegroundColor()),
-                                        )
-                                      : const Icon(Icons.line_weight),
-                                ),
+                                _drawSlider(context),
+                              if (isDrawing) _drawPenWeightButton(context),
                               const SizedBox(
                                 height: 16,
                               ),
@@ -213,7 +212,7 @@ class _DrawViewState extends State<DrawView> with TickerProviderStateMixin {
                                   onPressed: () {
                                     showDialog(
                                         context: context,
-                                        builder: buildColorPickerDialog);
+                                        builder: _buildColorPickerDialog);
                                   },
                                   foregroundColor:
                                       _currentColor.getForegroundColor(),
@@ -289,17 +288,17 @@ class _DrawViewState extends State<DrawView> with TickerProviderStateMixin {
       _currentColor = Theme.of(context).primaryColor;
       _fontColor = _currentColor.getForegroundColor();
       _initialized = true;
-      _compressionRatio =
-          context.read<AppSettingsCubit>().getCompressionRatio();
     }
 
     return isDrawing
         ? _buildDrawArea(context)
         : PageNavigator(
-            previousPage: ChatView(
-              friend: widget.friend,
-              user: widget.user,
-            ),
+            previousPage: !widget.landscapeMode
+                ? ChatView(
+                    friend: widget.friend,
+                    user: widget.user,
+                  )
+                : Container(),
             onPreviousPage: context.read<ChatCubit>().closeDrawStream,
             duration: const Duration(milliseconds: 200),
             child: _buildDrawArea(context),

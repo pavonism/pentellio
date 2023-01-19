@@ -1,6 +1,8 @@
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/services/user_service.dart';
 
@@ -30,7 +32,12 @@ class AuthCubit extends Cubit<AuthState> {
       required String password,
       required String username}) async {
     emit(SigningInState());
+
     final registerState = RegisterState(email: email, password: password);
+    if (!kIsWeb && !await InternetConnectionChecker().hasConnection) {
+      emit(registerState..error = "No Internet connection!");
+      return;
+    }
 
     try {
       final result = await authService.signUp(email, password);
@@ -47,7 +54,7 @@ class AuthCubit extends Cubit<AuthState> {
           break;
         case SignUpResult.emailAlreadyInUse:
           emit(registerState
-            ..error = 'Email is already in used \n Try with another one');
+            ..error = 'Email is already in used. Try with another one');
           break;
         case SignUpResult.operationNotAllowed:
           emit(registerState..error = 'Operation is not allowed');
@@ -55,7 +62,7 @@ class AuthCubit extends Cubit<AuthState> {
         case SignUpResult.weakPassword:
           emit(registerState
             ..error =
-                'Chosen password is too weak. \n Password must contain at least 6 characters');
+                'Chosen password is too weak. Password must contain at least 6 characters');
           break;
       }
     } catch (e) {
@@ -68,10 +75,15 @@ class AuthCubit extends Cubit<AuthState> {
     required String password,
   }) async {
     emit(SigningInState());
+
+    final signedOutState = SignedOutState(email: email, password: password);
+    if (!kIsWeb && !await InternetConnectionChecker().hasConnection) {
+      emit(signedOutState..error = "No Internet connection");
+      return;
+    }
+
     try {
       final result = await authService.signInWithEmail(email, password);
-      final signedOutState = SignedOutState(email: email, password: password);
-
       switch (result) {
         case SignInResult.success:
           var userId = authService.getCurrentUserId()!;
@@ -85,7 +97,7 @@ class AuthCubit extends Cubit<AuthState> {
           break;
         case SignInResult.userNotFound:
           emit(signedOutState
-            ..error = 'User was not found. \nPlease, check your credentials');
+            ..error = 'User was not found. Please, check your credentials');
           break;
         case SignInResult.emailAlreadyInUse:
           emit(signedOutState..error = 'Email is already in used');
@@ -93,7 +105,7 @@ class AuthCubit extends Cubit<AuthState> {
         case SignInResult.wrongPassword:
           emit(signedOutState
             ..error =
-                "Email and password don't match. \nPlease, check your credentials");
+                "Email and password don't match. Please, check your credentials");
           break;
       }
     } catch (e) {

@@ -44,7 +44,7 @@ class UserService {
   StreamSubscription<DatabaseEvent>? searchStream;
 
   void searchUsers(String text, Function(List<PentellioUser>) function) async {
-    searchStream?.cancel();
+    await searchStream?.cancel();
 
     try {
       searchStream = _users
@@ -57,10 +57,6 @@ class UserService {
           function(_mapToUsers(event));
         }
       });
-      //     .once()
-      //     .then((value) {
-      //   users = _mapToUsers(value);
-      // });
     } catch (e) {
       log(e.toString(), name: searchUsers.toString());
     }
@@ -100,13 +96,15 @@ class UserService {
     friend.user = await getUser(friend.uId);
   }
 
-  void listenStatusUpdates(Iterable<Friend> friends) {
+  void listenStatusUpdates(Iterable<Friend> friends, Function onStatusUpdate) {
     for (var friend in friends) {
       _users.child("${friend.uId}/last_seen").onValue.listen(
         (event) {
           friend.user.lastSeen = event.snapshot.exists
               ? DateTime.parse(event.snapshot.value!.toString())
               : null;
+
+          onStatusUpdate();
         },
       );
     }

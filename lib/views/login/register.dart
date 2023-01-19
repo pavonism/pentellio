@@ -31,6 +31,17 @@ class _PentellioRegisterState extends State<PentellioRegister> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          if (state is SignedOutState && state.error != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Text(
+                state.error!,
+                style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    color: Theme.of(context).errorColor,
+                    fontFamily: "Arial"),
+              ),
+            ),
           ThemedFormField(
             controller: nickname,
             labelText: "Username*",
@@ -100,14 +111,6 @@ class _PentellioRegisterState extends State<PentellioRegister> {
           const SizedBox(
             height: 20,
           ),
-          if (state is SignedOutState && state.error != null)
-            Text(
-              state.error!,
-              style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: Theme.of(context).errorColor,
-                  fontFamily: "Arial"),
-            ),
         ],
       ),
     );

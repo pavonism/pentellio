@@ -8,7 +8,7 @@ class Brush extends CustomPainter {
   Brush({required this.sketches});
 
   @override
-  void paint(Canvas canvas, Size size) {
+  paint(Canvas canvas, Size size) {
     Paint paint = Paint();
 
     for (var i = 0; i < sketches.length; i++) {

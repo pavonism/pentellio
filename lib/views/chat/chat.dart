@@ -6,16 +6,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:pentellio/cubits/chat_cubit.dart';
-import 'package:pentellio/models/message.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/views/chat_list/chat_list.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
 import 'package:pentellio/utilities/date_time_extensions.dart';
 import 'package:pentellio/widgets/rounded_rect.dart';
 import 'package:pentellio/widgets/themed_button.dart';
-import 'package:photo_view/photo_view.dart';
 
 import '../page_navigator.dart';
+import 'message_tile.dart';
 
 class ChatView extends StatefulWidget {
   const ChatView(
@@ -33,16 +32,14 @@ class ChatView extends StatefulWidget {
 }
 
 class _ChatViewState extends State<ChatView> {
-  final messageController = TextEditingController();
+  final _messageController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
-
-  void trySendMessage(BuildContext context) async {
-    if (messageController.text.trim().isEmpty) return;
-    var msg = messageController.text;
-    setState(() {
-      messageController.clear();
-    });
+  _trySendMessage(BuildContext context) async {
+    if (_messageController.text.trim().isEmpty) return;
+    var msg = _messageController.text;
+    _messageController.clear();
     await context.read<ChatCubit>().sendMessage(msg);
+    _messageController.clear();
   }
 
   _pickImagesFromGallery(ChatCubit chatCubit) async {
@@ -55,9 +52,9 @@ class _ChatViewState extends State<ChatView> {
     }
 
     var images = await _imagePicker.pickMultiImage();
-    await chatCubit.sendMessageWithImages(messageController.text, images);
+    await chatCubit.sendMessageWithImages(_messageController.text, images);
 
-    messageController.clear();
+    _messageController.clear();
   }
 
   _takeCameraPicture(ChatCubit chatCubit) async {
@@ -69,9 +66,9 @@ class _ChatViewState extends State<ChatView> {
 
     var image = await _imagePicker.pickImage(source: ImageSource.camera);
     if (image != null) {
-      await chatCubit.sendMessageWithImages(messageController.text, [image]);
+      await chatCubit.sendMessageWithImages(_messageController.text, [image]);
 
-      messageController.clear();
+      _messageController.clear();
     }
   }
 
@@ -114,7 +111,7 @@ class _ChatViewState extends State<ChatView> {
     return PageNavigator(
       onPreviousPage: context.read<ChatCubit>().closeChat,
       previousPage: !widget.landscapeMode
-          ? ChatPanelPortrait(
+          ? ChatListView(
               user: widget.user,
             )
           : const Scaffold(),
@@ -230,10 +227,8 @@ class _ChatViewState extends State<ChatView> {
                           : 300 + constraints.maxWidth * 0.3,
                       message: msg,
                       currentUser: widget.user,
-                      sameSender:
-                          index > 0 && msgs[index - 1].sentBy == msg.sentBy
-                              ? true
-                              : false,
+                      sameSenderAsBefore:
+                          index > 0 && msgs[index - 1].sentBy == msg.sentBy,
                       firstMessage: firstMessageFromOtherUser,
                     ),
                   ]);
@@ -266,8 +261,9 @@ class _ChatViewState extends State<ChatView> {
                   BoxConstraints.loose(const Size(double.infinity, 200)),
               child: SingleChildScrollView(
                 child: TextFormField(
+                  onEditingComplete: () => _trySendMessage(context),
                   textInputAction: TextInputAction.none,
-                  controller: messageController,
+                  controller: _messageController,
                   maxLines: null,
                   keyboardType: TextInputType.multiline,
                   decoration: const InputDecoration(
@@ -282,7 +278,7 @@ class _ChatViewState extends State<ChatView> {
             width: 50,
             child: IconButton(
               onPressed: () {
-                trySendMessage(context);
+                _trySendMessage(context);
               },
               splashRadius: 25,
               icon: const Icon(
@@ -332,154 +328,5 @@ class ChatTimeDivider extends StatelessWidget {
         child: Text(date.date()),
       ),
     ));
-  }
-}
-
-class MessageTile extends StatelessWidget {
-  const MessageTile(
-    this.width, {
-    required this.sender,
-    super.key,
-    required this.message,
-    required this.currentUser,
-    this.sameSender = true,
-    this.firstMessage = true,
-  });
-
-  final double width;
-  final Message message;
-  final PentellioUser sender;
-  final PentellioUser currentUser;
-  final bool sameSender;
-  final bool firstMessage;
-
-  Widget showPhotoInDialog(BuildContext context, String url) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return AlertDialog(
-          backgroundColor: Colors.transparent,
-          content: SizedBox(
-            width: constraints.maxWidth,
-            height: constraints.maxHeight,
-            child: PhotoView(
-              backgroundDecoration:
-                  const BoxDecoration(color: Colors.transparent),
-              imageProvider: CachedNetworkImageProvider(url),
-            ),
-          ));
-    });
-  }
-
-  Widget _buildImageInMessage(BuildContext context, UrlImage image) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: InkWell(
-        onTap: () {
-          showDialog(
-              context: context,
-              builder: (context) => showPhotoInDialog(context, image.url));
-        },
-        child: CachedNetworkImage(
-            placeholder: (context, url) => const CircularProgressIndicator(),
-            cacheManager: kIsWeb ? null : context.read(),
-            imageUrl: image.url),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var radius = const Radius.circular(20);
-
-    var pictureProfileWidget = sameSender
-        ? const SizedBox(
-            width: 40,
-            height: 40,
-          )
-        : RoundedRect(40,
-            child: sender.profilePictureUrl.isNotEmpty
-                ? CachedNetworkImage(
-                    cacheManager: context.read(),
-                    imageUrl: sender.profilePictureUrl)
-                : ColoredBox(color: Theme.of(context).indicatorColor));
-
-    final List<Widget> singleMessage = <Widget>[
-      pictureProfileWidget,
-      Flexible(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: width),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).backgroundColor,
-                border:
-                    Border.all(color: Theme.of(context).shadowColor, width: 1),
-                borderRadius: sender.userId != currentUser.userId
-                    ? BorderRadius.only(
-                        bottomRight: radius, topLeft: radius, topRight: radius)
-                    : BorderRadius.only(
-                        bottomLeft: radius, topLeft: radius, topRight: radius),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: sender.userId != currentUser.userId
-                      ? CrossAxisAlignment.start
-                      : CrossAxisAlignment.end,
-                  children: [
-                    if (sender.userId != currentUser.userId && firstMessage)
-                      Text(
-                        sender.username,
-                        textAlign: TextAlign.right,
-                        style:
-                            TextStyle(color: Theme.of(context).indicatorColor),
-                      ),
-                    if (message.images.isNotEmpty)
-                      for (var image in message.images)
-                        _buildImageInMessage(context, image),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            message.content,
-                            softWrap: true,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 16,
-                        ),
-                        Text(
-                          message.sentTime.time(),
-                          textScaleFactor: 0.65,
-                        )
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-      const SizedBox(
-        width: 50,
-      )
-    ];
-
-    return Padding(
-      padding:
-          EdgeInsets.symmetric(vertical: sameSender ? 4 : 8, horizontal: 4),
-      child: Row(
-          mainAxisAlignment: sender.userId == currentUser.userId
-              ? MainAxisAlignment.end
-              : MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: sender.userId != currentUser.userId
-              ? singleMessage
-              : singleMessage.reversed.toList()),
-    );
   }
 }

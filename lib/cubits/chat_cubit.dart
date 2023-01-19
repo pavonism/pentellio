@@ -7,43 +7,8 @@ import 'package:pentellio/models/sketch.dart';
 import 'package:pentellio/models/user.dart';
 import 'package:pentellio/services/chat_service.dart';
 import 'package:pentellio/services/image_service.dart';
+import 'package:pentellio/views/chat_list/chat_list.dart';
 import '../services/user_service.dart';
-
-class EmptyState {
-  bool? isSearchingUsers;
-}
-
-class UserState extends EmptyState {
-  UserState({required this.currentUser});
-  PentellioUser currentUser;
-}
-
-class ChatState extends UserState {
-  ChatState({required this.openedChat, required super.currentUser});
-  Friend openedChat;
-}
-
-class ChatOpenedState extends ChatState {
-  ChatOpenedState({required super.openedChat, required super.currentUser});
-}
-
-class SearchingUsersState extends UserState {
-  SearchingUsersState({required super.currentUser, this.users = const []}) {
-    isSearchingUsers = true;
-  }
-
-  List<PentellioUser> users;
-}
-
-class DrawingChatState extends ChatState {
-  DrawingChatState({required super.openedChat, required super.currentUser});
-}
-
-class SettingsState extends UserState {
-  SettingsState({required super.currentUser, this.openedChat});
-
-  final Friend? openedChat;
-}
 
 class ChatCubit extends Cubit<EmptyState> {
   ChatCubit(
@@ -55,29 +20,77 @@ class ChatCubit extends Cubit<EmptyState> {
     _initialize(userId);
   }
 
-  late PentellioUser currentUser;
   ChatService chatService;
   UserService userService;
   StorageService storageService;
+
+  late PentellioUser currentUser;
   Friend? openedChat;
   Friend? lastOpenedChat;
 
-  void startSearchingUsers() {
-    searchUsers("");
+  void _initialize(String userId) async {
+    currentUser = await userService.getUser(userId);
+    await _loadFriends(currentUser.friends);
+    userService.listenStatusUpdates(currentUser.friends, _onStatusUpdate);
+    await _loadChats(currentUser.friends);
+    _listenChats(currentUser.friends);
+    userService.userCameBack(currentUser.userId);
+    emit(UserState(currentUser: currentUser));
   }
 
-  void closeSearching() {
-    userService.searchStream?.cancel();
+  _onStatusUpdate() {
+    _refresh();
   }
 
-  List<PentellioUser> foundUsers = [];
+  _refresh() {
+    if (super.state is ChatOpenedState) {
+      emit(ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
+    } else if (super.state is DrawingChatState) {
+      emit(DrawingChatState(openedChat: openedChat!, currentUser: currentUser));
+    } else if (super.state is SettingsState) {
+      emit(SettingsState(openedChat: openedChat, currentUser: currentUser));
+    } else if (super.state is UserState) {
+      emit(UserState(currentUser: currentUser));
+    }
+  }
 
-  void searchUsers(String phrase) async {
-    foundUsers = [];
-    userService.searchUsers(phrase, (users) {
-      foundUsers.addAll(users);
-      emit(SearchingUsersState(currentUser: currentUser, users: foundUsers));
-    });
+  Future _loadFriends(FriendCollection friends) async {
+    for (var friend in friends) {
+      await userService.loadFriend(friend);
+    }
+  }
+
+  Future _loadChat(Friend friend) async {
+    await chatService.loadChatForFriend(friend);
+    storageService.loadImagesForChat(friend.chat);
+  }
+
+  Future _loadChats(List<Friend> friends) async {
+    List<Future> futures = [];
+
+    for (var friend in friends) {
+      futures.add(_loadChat(friend));
+    }
+
+    await Future.wait(futures);
+  }
+
+  void _listenChats(List<Friend> friends) {
+    for (var friend in friends) {
+      chatService.listenChat(
+          friend.chat, (msg) => _messageReceived(msg, friend));
+    }
+  }
+
+  void _messageReceived(Message newMessage, Friend friend) {
+    currentUser.friends.addMessage(friend, newMessage);
+    _refresh();
+  }
+
+  void openLastOpenedChat() {
+    if (lastOpenedChat != null) {
+      openChat(lastOpenedChat!);
+    }
   }
 
   void openChat(Friend friend) {
@@ -87,24 +100,20 @@ class ChatCubit extends Cubit<EmptyState> {
     emit(ChatOpenedState(openedChat: friend, currentUser: currentUser));
   }
 
-  void _messageReceived(Message newMessage, Friend friend) {
-    currentUser.friends.addMessage(friend, newMessage);
-
+  void closeChat() {
     if (openedChat != null) {
-      emit(ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
-    } else if (super.state is UserState) {
-      emit(UserState(currentUser: currentUser));
+      lastOpenedChat = openedChat;
+      openedChat = null;
     }
+    emit(UserState(currentUser: currentUser));
   }
 
-  void _initialize(String userId) async {
-    currentUser = await userService.getUser(userId);
-    await _loadFriends(currentUser.friends);
-    userService.listenStatusUpdates(currentUser.friends);
-    await _loadChats(currentUser.friends);
-    _listenChats(currentUser.friends);
-
-    emit(UserState(currentUser: currentUser));
+  void showChatList() {
+    if (openedChat != null) {
+      emit(ChatOpenedState(currentUser: currentUser, openedChat: openedChat!));
+    } else {
+      emit(UserState(currentUser: currentUser));
+    }
   }
 
   void createAndOpenChat(PentellioUser user) async {
@@ -131,25 +140,25 @@ class ChatCubit extends Cubit<EmptyState> {
     openChat(friend);
   }
 
-  Future _loadFriends(FriendCollection friends) async {
-    for (var friend in friends) {
-      await userService.loadFriend(friend);
-    }
+  void startSearchingUsers() {
+    searchUsers("");
   }
 
-  Future _loadChat(Friend friend) async {
-    await chatService.loadChatForFriend(friend);
-    storageService.loadImagesForChat(friend.chat);
+  List<PentellioUser> _foundUsers = [];
+  void searchUsers(String phrase) async {
+    _foundUsers = [];
+    userService.searchUsers(phrase, (users) {
+      _foundUsers = [];
+      _foundUsers.addAll(users);
+      emit(SearchingUsersState(
+          currentUser: currentUser,
+          users: _foundUsers,
+          openedChat: openedChat));
+    });
   }
 
-  Future _loadChats(List<Friend> friends) async {
-    List<Future> futures = [];
-
-    for (var friend in friends) {
-      futures.add(_loadChat(friend));
-    }
-
-    await Future.wait(futures);
+  void closeSearching() {
+    userService.searchStream?.cancel();
   }
 
   Future sendMessage(String msg) async {
@@ -161,8 +170,7 @@ class ChatCubit extends Cubit<EmptyState> {
                 content: msg,
                 sentBy: currentUser.userId,
                 sentTime: DateTime.now()));
-        emit(
-            ChatOpenedState(openedChat: openedChat!, currentUser: currentUser));
+        _refresh();
       } catch (e) {
         log(e.toString(), time: DateTime.now());
       }
@@ -197,26 +205,20 @@ class ChatCubit extends Cubit<EmptyState> {
     }
   }
 
-  void closeChat() {
-    if (openedChat != null) {
-      lastOpenedChat = openedChat;
-      openedChat = null;
-    }
-    emit(UserState(currentUser: currentUser));
-  }
-
-  void openLastOpenedChat() {
-    if (lastOpenedChat != null) {
-      openChat(lastOpenedChat!);
-    }
-  }
-
   void openDrawStream() {
     if (openedChat != null) {
       chatService.listenSketches(openedChat!.chat, (sketch) {
         openedChat!.chat.sketches.add(sketch);
         emit(DrawingChatState(
-            openedChat: openedChat!, currentUser: currentUser));
+          openedChat: openedChat!,
+          currentUser: currentUser,
+        ));
+      }, () {
+        openedChat!.chat.sketches.clear();
+        emit(DrawingChatState(
+          openedChat: openedChat!,
+          currentUser: currentUser,
+        ));
       });
       emit(DrawingChatState(openedChat: openedChat!, currentUser: currentUser));
     }
@@ -237,23 +239,8 @@ class ChatCubit extends Cubit<EmptyState> {
     emit(DrawingChatState(openedChat: openedChat!, currentUser: currentUser));
   }
 
-  void _listenChats(List<Friend> friends) {
-    for (var friend in friends) {
-      chatService.listenChat(
-          friend.chat, (msg) => _messageReceived(msg, friend));
-    }
-  }
-
   void viewSettings() {
     emit(SettingsState(currentUser: currentUser, openedChat: openedChat));
-  }
-
-  void showChatList() {
-    if (openedChat != null) {
-      emit(ChatOpenedState(currentUser: currentUser, openedChat: openedChat!));
-    } else {
-      emit(UserState(currentUser: currentUser));
-    }
   }
 
   void changeProfilePicture(XFile image) async {
@@ -261,4 +248,39 @@ class ChatCubit extends Cubit<EmptyState> {
         await storageService.uploadProfilePicture(currentUser.userId, image);
     userService.setProfilePicture(currentUser, url);
   }
+}
+
+class EmptyState {}
+
+class UserState extends EmptyState {
+  UserState({required this.currentUser});
+  PentellioUser currentUser;
+}
+
+class ChatState extends UserState {
+  ChatState({required this.openedChat, required super.currentUser});
+  Friend openedChat;
+}
+
+class ChatOpenedState extends ChatState {
+  ChatOpenedState({required super.openedChat, required super.currentUser});
+}
+
+class SearchingUsersState extends EmptyState {
+  SearchingUsersState(
+      {required this.currentUser, this.users = const [], this.openedChat});
+
+  final Friend? openedChat;
+  PentellioUser currentUser;
+  List<PentellioUser> users;
+}
+
+class DrawingChatState extends ChatState {
+  DrawingChatState({required super.openedChat, required super.currentUser});
+}
+
+class SettingsState extends UserState {
+  SettingsState({required super.currentUser, this.openedChat});
+
+  final Friend? openedChat;
 }

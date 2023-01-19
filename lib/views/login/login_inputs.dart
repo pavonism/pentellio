@@ -54,6 +54,15 @@ class _PentellioLoginInputsState extends State<PentellioLoginInputs> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (state is SignedOutState && state.error != null)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Text(
+                "${state.error!}!",
+                style: TextStyle(
+                    color: Theme.of(context).errorColor, fontFamily: "Arial"),
+              ),
+            ),
           ThemedFormField(
             controller: email,
             labelText: 'Email',
@@ -110,14 +119,6 @@ class _PentellioLoginInputsState extends State<PentellioLoginInputs> {
           const SizedBox(
             height: 20,
           ),
-          if (state is SignedOutState && state.error != null)
-            Text(
-              "${state.error!}!",
-              style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: Theme.of(context).errorColor,
-                  fontFamily: "Arial"),
-            ),
         ],
       ),
     );

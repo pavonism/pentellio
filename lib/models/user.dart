@@ -50,7 +50,9 @@ class PentellioUser {
     }
 
     if (map.containsKey('last_seen')) {
-      lastSeen = DateTime.parse(map['last_seen']);
+      if (map['last_seen'] != "") {
+        lastSeen = DateTime.parse(map['last_seen']);
+      }
     }
 
     if (map.containsKey("profile_picture")) {

@@ -9,11 +9,11 @@ import 'package:pentellio/views/chat/chat.dart';
 import 'package:pentellio/views/drawing/draw_view.dart';
 import 'package:pentellio/views/page_navigator.dart';
 import 'package:pentellio/views/settings/settings.dart';
+import 'package:pentellio/views/users_list/users_panel.dart';
 import 'package:pentellio/widgets/app_state_observer.dart';
 import 'package:provider/provider.dart';
 
 import 'chat_list/chat_list.dart';
-import 'chat_list/users_panel.dart';
 import 'loading_screen.dart';
 
 class PentellionPages extends StatelessWidget {
@@ -88,7 +88,7 @@ class PentellioPagesPortrait extends StatelessWidget {
             cubit: context.read(),
           );
         } else if (state is UserState) {
-          return ChatPanelPortrait(
+          return ChatListView(
             user: state.currentUser,
           );
         }
@@ -125,7 +125,7 @@ class PentellioPagesLandscape extends StatelessWidget {
                     friend: state.openedChat,
                   );
                 } else if (state is ChatOpenedState) {
-                  return ChatPanelPortrait(
+                  return ChatListView(
                     user: state.currentUser,
                   );
                 } else if (state is SearchingUsersState) {
@@ -135,7 +135,7 @@ class PentellioPagesLandscape extends StatelessWidget {
                     cubit: context.read(),
                   );
                 } else if (state is UserState) {
-                  return ChatPanelPortrait(
+                  return ChatListView(
                     user: state.currentUser,
                   );
                 }
@@ -152,6 +152,7 @@ class PentellioPagesLandscape extends StatelessWidget {
                 return DrawView(
                   user: state.currentUser,
                   friend: state.openedChat,
+                  landscapeMode: true,
                 );
               } else if (state is ChatOpenedState) {
                 return ChatView(
@@ -161,6 +162,13 @@ class PentellioPagesLandscape extends StatelessWidget {
                   user: state.currentUser,
                 );
               } else if (state is SettingsState && state.openedChat != null) {
+                return ChatView(
+                  key: ValueKey(state.openedChat!.chatId),
+                  landscapeMode: true,
+                  friend: state.openedChat!,
+                  user: state.currentUser,
+                );
+              } else if (state is SearchingUsersState) {
                 return ChatView(
                   key: ValueKey(state.openedChat!.chatId),
                   landscapeMode: true,
